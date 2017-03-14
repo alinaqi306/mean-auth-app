@@ -35,6 +35,11 @@ app.use(passport.session());
 app.get('/', (req, res) => {
   res.send('Invalid Endpoint');
 });
+
+// redirect not already specified urls to index.html
+app.get('*', (req, res) => {
+  res.join(__dirname, 'public/index.html');
+});
 app.listen(port, () => {
   console.log('server started at port '+ port);
 });
