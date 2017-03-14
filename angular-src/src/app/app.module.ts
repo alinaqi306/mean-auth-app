@@ -14,7 +14,8 @@ import { ProfileComponent } from './components/profile/profile.component';
 
 import { FlashMessagesModule} from 'angular2-flash-messages';
 
-import { ValidationService } from './services/validation.service'
+import { ValidationService } from './services/validation.service';
+import { AuthService } from './services/auth.service';
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
   {path : 'login', component : LoginComponent},
@@ -40,7 +41,7 @@ const appRoutes : Routes = [
     RouterModule.forRoot(appRoutes),
     FlashMessagesModule
   ],
-  providers: [ValidationService],
+  providers: [ValidationService, AuthService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
