@@ -18,6 +18,7 @@ import { ValidationService } from './services/validation.service';
 import { AuthService } from './services/auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { GraphComponent } from './components/graph/graph.component';
+import { CsvgraphComponent } from './components/csvgraph/csvgraph.component';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -25,7 +26,8 @@ const appRoutes : Routes = [
   {path : 'register', component : RegisterComponent},
   {path : 'dashboard', component : DashboardComponent, canActivate:[AuthGuard]},
   {path : 'profile', component : ProfileComponent, canActivate:[AuthGuard]},
-  {path : 'graph', component : GraphComponent}
+  {path : 'graph', component : GraphComponent},
+  {path : 'csvgraph', component : CsvgraphComponent}
 
 ];
 @NgModule({
@@ -37,7 +39,8 @@ const appRoutes : Routes = [
     RegisterComponent,
     DashboardComponent,
     ProfileComponent,
-    GraphComponent
+    GraphComponent,
+    CsvgraphComponent
   ],
   imports: [
     BrowserModule,

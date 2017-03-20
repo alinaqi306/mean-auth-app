@@ -16,7 +16,8 @@
     "jsonwebtoken": "*",
     "mongoose": "*",
     "passport": "*",
-    "passport-jwt": "*"
+    "passport-jwt": "*",
+    "mssql":"*"
   },
   "author": "Ali Naqi",
   "license": "ISC"

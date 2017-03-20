@@ -36,7 +36,7 @@ export class GraphComponent implements OnInit {
   private initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
-                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");;
+                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
   private initAxis() {
