@@ -41,7 +41,7 @@ connection.connect(function (err) {
         console.log(err);
 
       }else{
-        console.log(recordSet.columns.get('MeterId'));
+        console.log(recordSet);
       }
     });
   }
