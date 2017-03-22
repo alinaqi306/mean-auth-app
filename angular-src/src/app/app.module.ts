@@ -19,6 +19,8 @@ import { AuthService } from './services/auth.service';
 import { AuthGuard } from './guards/auth.guard';
 import { GraphComponent } from './components/graph/graph.component';
 import { CsvgraphComponent } from './components/csvgraph/csvgraph.component';
+import { RestbasedgraphComponent } from './components/restbasedgraph/restbasedgraph.component';
+import { GraphdataService } from './services/graphdata.service';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -27,7 +29,8 @@ const appRoutes : Routes = [
   {path : 'dashboard', component : DashboardComponent, canActivate:[AuthGuard]},
   {path : 'profile', component : ProfileComponent, canActivate:[AuthGuard]},
   {path : 'graph', component : GraphComponent},
-  {path : 'csvgraph', component : CsvgraphComponent}
+  {path : 'csvgraph', component : CsvgraphComponent},
+  {path : 'restbasedgraph', component : RestbasedgraphComponent}
 
 ];
 @NgModule({
@@ -40,7 +43,8 @@ const appRoutes : Routes = [
     DashboardComponent,
     ProfileComponent,
     GraphComponent,
-    CsvgraphComponent
+    CsvgraphComponent,
+    RestbasedgraphComponent
   ],
   imports: [
     BrowserModule,
@@ -49,7 +53,7 @@ const appRoutes : Routes = [
     RouterModule.forRoot(appRoutes),
     FlashMessagesModule
   ],
-  providers: [ValidationService, AuthService,AuthGuard],
+  providers: [ValidationService, AuthService,AuthGuard,GraphdataService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

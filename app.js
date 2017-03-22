@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 
 // sql server 
 
-const sql = require('mssql');
+//const sql = require('mssql');
 
 const app = express();
 // App port
@@ -16,9 +16,10 @@ const port = 3000;
 // incliding users.js file
 const users = require('./routes/users');
 const config = require('./config/database');
+const graphdata = require('./routes/graphdata');
 
 require('./config/passport')(passport);
-/*mongoose.connect(config.database);
+mongoose.connect(config.database);
 
 mongoose.connection.on('connected', () => {
   console.log('connected to datanase: ' + config.database);
@@ -27,31 +28,13 @@ mongoose.connection.on('connected', () => {
 mongoose.connection.on('error', (err) => {
   console.log('database error: ' + err);
 });
-*/
-var connection = new sql.Connection(config.databaseConfig);
-var req = new sql.Request(connection);
-connection.connect(function (err) {
-  if(err){
-    console.log(err);
-  }
-  else{
-    console.log('Success.......');
-    req.query('select * from Readings', (err, recordSet) => {
-      if(err){
-        console.log(err);
-
-      }else{
-        console.log(recordSet);
-      }
-    });
-  }
-});
 
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cors());
 app.use(bodyParser.json());
 app.use('/users', users);
+app.use('/graphdata', graphdata);
 app.use(passport.initialize());
 app.use(passport.session());
 
