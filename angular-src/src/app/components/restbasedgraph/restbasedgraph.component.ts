@@ -44,6 +44,7 @@ export class RestbasedgraphComponent implements OnInit {
   getData(){
  
     this.graphDataService.getGraphData().subscribe(data => {
+      debugger;
       this.data = data;
  
     },
