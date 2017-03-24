@@ -1,1 +1,35 @@
 /* You can add global styles to this file, and also import other style files */
+
+.axis {
+  font: 10px sans-serif;
+}
+
+
+.axis-title {
+  fill: none;
+  stroke: black;
+  stroke-width: 0.5px;
+}
+
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+  .axis path,
+  .axis line{
+    fill: none;
+    stroke: black;
+  }
+
+
+
+  .tick text{
+    font-size: 12px;
+  }
+
+  .tick line{
+    opacity: 0.2;
+  }
