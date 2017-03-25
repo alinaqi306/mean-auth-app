@@ -7,7 +7,6 @@ export class GraphdataService {
   constructor(private http : Http) { }
 
   getGraphData(){
-    debugger;
     let headers = new Headers();
     headers.append('Content-Type','application/json');
     return this.http.get('http://localhost:3000/graphdata/data',{headers:headers})

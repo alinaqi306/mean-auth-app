@@ -6,7 +6,7 @@ import * as d3Shape from "d3-shape";
 import * as d3Array from "d3-array";
 import * as d3Axis from "d3-axis";
 //import * as d3Transition from "d3-transition";
-import { Readings } from '../../data/Readings';
+import * as type from '../../data/Readings';
 
 @Component({
   selector: 'app-restbasedgraph',
@@ -24,7 +24,7 @@ export class RestbasedgraphComponent implements OnInit {
   private yAxis : any;
   private svg: any;
   //private transition: any;
-  private data: Array<Object>;
+  private data: Array<type.Reading>;
   private line: d3Shape.Line<[number, number]>;
 
   constructor(private graphDataService: GraphdataService ) {
@@ -35,14 +35,24 @@ export class RestbasedgraphComponent implements OnInit {
    }
 
   ngOnInit() {
-    //this.getData();
-    this.initSvg();
-    this.initAxis();
-    this.labelLine(); // add readings on the line graph
-    this.drawAxis(); 
-    this.xAxisLable();
-    this.yAxisLable();
-    this.drawLine();
+    this.getData();
+    setTimeout(() => {
+      if (this.data != null) {
+        console.log(this.data);
+        //console.log(Readings);
+        this.initSvg();
+        this.initAxis();
+        this.labelLine(); // add readings on the line graph
+        this.drawAxis();
+        this.xAxisLable();
+        this.yAxisLable();
+        this.drawLine();
+      } else{
+        console.log("Service did not return");
+      }
+    
+    }, 3000);
+    
     
     
     //console.log(this.data);
@@ -57,7 +67,6 @@ export class RestbasedgraphComponent implements OnInit {
   getData(){
  
     this.graphDataService.getGraphData().subscribe(data => {
-      debugger;
       this.data = data;
  
     },
@@ -72,8 +81,8 @@ export class RestbasedgraphComponent implements OnInit {
   private initAxis() {
     this.x = d3Scale.scaleTime().range([0, this.width]);
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
-    this.x.domain(d3Array.extent(Readings, (d) => d.LogDate ))
-    this.y.domain(d3Array.extent(Readings, (d) => d.Value ))
+    this.x.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
+    this.y.domain(d3Array.extent(this.data, (d) => d.Value ))
     this.xAxis = d3Axis.axisBottom(this.x)
                   .tickSizeInner(-this.height)
                   .tickSizeOuter(0)
@@ -121,11 +130,11 @@ yAxisLable(){
 
   private drawLine() {
     this.line = d3Shape.line()
-                       .x( (d: any) => this.x(d.LogDate) )
+                       .x( (d: any) => this.x(new Date(d.LogDate)) )
                        .y( (d: any) => this.y(d.Value) );
 
     this.svg.append("path")
-            .datum(Readings)
+            .datum(this.data)
             .attr("fill", "none")
       .attr("stroke", "steelblue")
       .attr("stroke-linejoin", "round")
@@ -136,14 +145,12 @@ yAxisLable(){
       .ease(d3.easeLinear) // trying to add transition
       .delay(function(d,i){ return i * 200;});
 
-      console.log(" draw Line completed....")
-      console.log(this.svg);
   }
 
   labelLine(){
     // values to appear on line graph also
     this.svg.selectAll("text")
-            .datum(Readings)
+            .datum(this.data)
             .enter()
             .append("text")
             .text(function(d) {return d.Value;})
@@ -151,7 +158,5 @@ yAxisLable(){
             .attr("y", function(d) {return this.y(d.Value);})
             .style("fill", "black");
 
-      console.log(" lableLine completed....")
-      console.log(this.svg);
   }
 }
