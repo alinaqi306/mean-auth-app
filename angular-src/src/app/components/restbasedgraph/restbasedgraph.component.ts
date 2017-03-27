@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit,NgZone } from '@angular/core';
 import { GraphdataService } from '../../services/graphdata.service';
 import * as d3 from 'd3';
 import * as d3Scale from "d3-scale";
@@ -26,8 +26,9 @@ export class RestbasedgraphComponent implements OnInit {
   //private transition: any;
   private data: Array<type.Reading>;
   private line: d3Shape.Line<[number, number]>;
+  private loadingMask: boolean;
 
-  constructor(private graphDataService: GraphdataService ) {
+  constructor(private graphDataService: GraphdataService, private ngZone : NgZone ) {
 
     this.width = 900 - this.margin.left - this.margin.right ;
     this.height = 500 - this.margin.top - this.margin.bottom;
@@ -35,27 +36,9 @@ export class RestbasedgraphComponent implements OnInit {
    }
 
   ngOnInit() {
+    
     this.getData();
-    setTimeout(() => {
-      if (this.data != null) {
-        console.log(this.data);
-        //console.log(Readings);
-        this.initSvg();
-        this.initAxis();
-        this.labelLine(); // add readings on the line graph
-        this.drawAxis();
-        this.xAxisLable();
-        this.yAxisLable();
-        this.drawLine();
-      } else{
-        console.log("Service did not return");
-      }
     
-    }, 3000);
-    
-    
-    
-    //console.log(this.data);
   }
 
   initSvg() {
@@ -64,11 +47,19 @@ export class RestbasedgraphComponent implements OnInit {
                  .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
-  getData(){
- 
+  getData() {
     this.graphDataService.getGraphData().subscribe(data => {
+
       this.data = data;
- 
+      this.ngZone.run(() => {
+        this.initSvg();
+        this.initAxis();
+        //this.labelLine(); // add readings on the line graph
+        this.drawAxis();
+        this.xAxisLable();
+        this.yAxisLable();
+        this.drawLine();
+      })
     },
     err => {        //observable can return error
       console.log(err);
@@ -76,7 +67,18 @@ export class RestbasedgraphComponent implements OnInit {
     });
     
     
+    
   }
+
+ /* drawGraph(){
+      this.initSvg();      
+      this.initAxis();
+      this.labelLine(); // add readings on the line graph
+      this.drawAxis();
+      this.xAxisLable();
+      this.yAxisLable();
+      this.drawLine();
+  }*/
 
   private initAxis() {
     this.x = d3Scale.scaleTime().range([0, this.width]);
