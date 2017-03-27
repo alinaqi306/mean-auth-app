@@ -36,7 +36,7 @@ export class RestbasedgraphComponent implements OnInit {
    }
 
   ngOnInit() {
-    
+    //this.loadingMask = true;
     this.getData();
     
   }
@@ -51,6 +51,7 @@ export class RestbasedgraphComponent implements OnInit {
     this.graphDataService.getGraphData().subscribe(data => {
 
       this.data = data;
+      //this.loadingMask = false;
       this.ngZone.run(() => {
         this.initSvg();
         this.initAxis();
