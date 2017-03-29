@@ -7,6 +7,7 @@ import * as d3Array from "d3-array";
 import * as d3Axis from "d3-axis";
 //import * as d3Transition from "d3-transition";
 import * as type from '../../data/Readings';
+import { Filter } from '../../dto/Filter';
 
 @Component({
   selector: 'app-restbasedgraph',
@@ -28,16 +29,22 @@ export class RestbasedgraphComponent implements OnInit {
   private line: d3Shape.Line<[number, number]>;
   private loadingMask: boolean;
 
-  constructor(private graphDataService: GraphdataService, private ngZone : NgZone ) {
+  private numberOfMonths: number;
+  private isDateRangeSelected: boolean;
+  private fromDate: Date;
+  private toDate: Date;
+  private filters: Filter = new Filter();
 
+  constructor(private graphDataService: GraphdataService, private ngZone : NgZone ) {
+    this.numberOfMonths = 1;
+    this.isDateRangeSelected = false;
     this.width = 900 - this.margin.left - this.margin.right ;
     this.height = 500 - this.margin.top - this.margin.bottom;
-   
-   }
-
+    this.filters.numberOfMonths = this.numberOfMonths;
+  }
   ngOnInit() {
     //this.loadingMask = true;
-    this.getData();
+    this.getData(this.filters);
     
   }
 
@@ -47,8 +54,8 @@ export class RestbasedgraphComponent implements OnInit {
                  .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
-  getData() {
-    this.graphDataService.getGraphData().subscribe(data => {
+  getData(filters) {
+    this.graphDataService.getGraphData(filters).subscribe(data => {
 
       this.data = data;
       //this.loadingMask = false;
@@ -71,15 +78,6 @@ export class RestbasedgraphComponent implements OnInit {
     
   }
 
- /* drawGraph(){
-      this.initSvg();      
-      this.initAxis();
-      this.labelLine(); // add readings on the line graph
-      this.drawAxis();
-      this.xAxisLable();
-      this.yAxisLable();
-      this.drawLine();
-  }*/
 
   private initAxis() {
     this.x = d3Scale.scaleTime().range([0, this.width]);
@@ -161,5 +159,34 @@ yAxisLable(){
             .attr("y", function(d) {return this.y(d.Value);})
             .style("fill", "black");
 
+  }
+
+  removeOldGraphElements(){
+    this.svg.selectAll("path").remove();
+    this.svg.selectAll("g").remove();
+    this.svg.selectAll("text").remove();
+    this.xAxis = null;
+    this.yAxis = null;
+    this.x = null;
+    this.y = null;
+    this.line = null;
+    this.data = null;
+    this.svg = null;
+  }
+
+  onFormSubmit(){
+    if(!this.isDateRangeSelected){
+      this.filters.numberOfMonths = this.numberOfMonths;
+      this.filters.fromDate = null;
+      this.filters.toDate = null;
+      this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request  
+      this.getData(this.filters);
+    }
+    else{
+      this.filters.fromDate = this.fromDate;
+      this.filters.toDate = this.toDate;
+      this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
+      this.getData(JSON.stringify(this.filters));
+    }
   }
 }

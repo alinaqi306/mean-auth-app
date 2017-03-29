@@ -1,6 +1,22 @@
 
 <!--<div *ngIf = "loadingMask == true" class="loader">
 </div> -->
-<div>
-<svg width="1024" height="800" style="background:white"></svg>
+<form (submit) = "onFormSubmit()">
+  <div class="form-group" *ngIf = "isDateRangeSelected == false">
+    <label for="Previous Months"> Data for {{numberOfMonths}} Month(s):</label>
+    <input type="number" class="form-control" [(ngModel)] = "numberOfMonths" name = "numberOfMonths" >
+  </div>
+  <div class="checkbox">
+    <label > <input type="checkbox"  [(ngModel)] = "isDateRangeSelected" name = "isDateRangeSelected"> Provide date Range  </label>   
+  </div>
+<div class="form-group" *ngIf = "isDateRangeSelected == true">
+    <label for="fromDate"> from Date:</label>
+    <input type="date" class="form-control" [(ngModel)]="fromDate" name="fromDate">
+    <label for="toDate"> to Date:</label>
+    <input type="date" class="form-control" [(ngModel)]="toDate" name="toDate">
+</div>
+  <button type="submit" class="btn btn-default">Submit</button>
+</form>
+<div style="margin-top: 20px">
+    <svg width="1024" height="800" style="background:white"></svg>
 </div>

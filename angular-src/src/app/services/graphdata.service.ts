@@ -6,10 +6,14 @@ export class GraphdataService {
 
   constructor(private http : Http) { }
 
-  getGraphData(){
+  getGraphData(filters){
     let headers = new Headers();
     headers.append('Content-Type','application/json');
-    return this.http.get('http://localhost:3000/graphdata/data',{headers:headers})
+   /* let params = '?numberOfMonths=' + filters.numberOfMonths + '&fromDate=' + filters.fromDate 
+                  + '&toDate=' + filters.toDate ;*/
+    /*return this.http.get('http://localhost:3000/graphdata/data'+ params , {headers:headers})
+    .map(res => res.json());*/
+    return this.http.post('http://localhost:3000/graphdata/data' , filters, {headers:headers})
     .map(res => res.json());
   }
 
