@@ -4,7 +4,7 @@
 <form (submit) = "onFormSubmit()">
   <div class="form-group" *ngIf = "isDateRangeSelected == false">
     <label for="Previous Months"> Data for {{numberOfMonths}} Month(s):</label>
-    <input type="number" class="form-control" [(ngModel)] = "numberOfMonths" name = "numberOfMonths" >
+    <input type="number" min="1" onkeypress="return event.charCode >= 49" class="form-control" [(ngModel)] = "numberOfMonths" name = "numberOfMonths" >
   </div>
   <div class="checkbox">
     <label > <input type="checkbox"  [(ngModel)] = "isDateRangeSelected" name = "isDateRangeSelected"> Provide date Range  </label>   

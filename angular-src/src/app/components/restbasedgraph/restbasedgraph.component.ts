@@ -1,5 +1,7 @@
 import { Component, OnInit,NgZone } from '@angular/core';
 import { GraphdataService } from '../../services/graphdata.service';
+import { FlashMessagesService} from 'angular2-flash-messages';
+import { ValidationService } from '../../services/validation.service';
 import * as d3 from 'd3';
 import * as d3Scale from "d3-scale";
 import * as d3Shape from "d3-shape";
@@ -35,7 +37,8 @@ export class RestbasedgraphComponent implements OnInit {
   private toDate: Date;
   private filters: Filter = new Filter();
 
-  constructor(private graphDataService: GraphdataService, private ngZone : NgZone ) {
+  constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
+              private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
     this.numberOfMonths = 1;
     this.isDateRangeSelected = false;
     this.width = 900 - this.margin.left - this.margin.right ;
@@ -176,7 +179,7 @@ yAxisLable(){
 
   onFormSubmit(){
     if(!this.isDateRangeSelected){
-      this.filters.numberOfMonths = this.numberOfMonths;
+      this.filters.numberOfMonths = Math.abs(this.numberOfMonths);
       this.filters.fromDate = null;
       this.filters.toDate = null;
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request  
@@ -185,6 +188,11 @@ yAxisLable(){
     else{
       this.filters.fromDate = this.fromDate;
       this.filters.toDate = this.toDate;
+      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) < 0 ){
+
+        this.flashMessage.show('To date should be greater than from date', {cssClass : 'alert-danger', timeout: 4000});
+        return false;
+      }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));
     }
