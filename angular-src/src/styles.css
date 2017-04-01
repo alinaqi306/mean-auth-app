@@ -1,6 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 
 @import url('/app/components/restbasedgraph/restbasedgraph.component.css');
+@import url('/app/components/multilinegraph/multilinegraph.component.css');
 
 .axis {
   font: 10px sans-serif;

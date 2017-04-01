@@ -21,6 +21,7 @@ import { GraphComponent } from './components/graph/graph.component';
 import { CsvgraphComponent } from './components/csvgraph/csvgraph.component';
 import { RestbasedgraphComponent } from './components/restbasedgraph/restbasedgraph.component';
 import { GraphdataService } from './services/graphdata.service';
+import { MultilinegraphComponent } from './components/multilinegraph/multilinegraph.component';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -30,7 +31,8 @@ const appRoutes : Routes = [
   {path : 'profile', component : ProfileComponent, canActivate:[AuthGuard]},
   {path : 'graph', component : GraphComponent},
   {path : 'csvgraph', component : CsvgraphComponent},
-  {path : 'restbasedgraph', component : RestbasedgraphComponent}
+  {path : 'restbasedgraph', component : RestbasedgraphComponent},
+  {path : 'multilinegraph', component : MultilinegraphComponent}
 
 ];
 @NgModule({
@@ -44,7 +46,8 @@ const appRoutes : Routes = [
     ProfileComponent,
     GraphComponent,
     CsvgraphComponent,
-    RestbasedgraphComponent
+    RestbasedgraphComponent,
+    MultilinegraphComponent
   ],
   imports: [
     BrowserModule,
