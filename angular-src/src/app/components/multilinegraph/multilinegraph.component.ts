@@ -48,7 +48,7 @@ private margin = {top: 20, right: 20, bottom: 70, left: 50};
     this.filters.numberOfMonths = this.numberOfMonths;
   }
   ngOnInit() {
-    //this.loadingMask = true;
+
     this.getData(this.filters);
     
   }
@@ -60,8 +60,9 @@ private margin = {top: 20, right: 20, bottom: 70, left: 50};
   }
 
   getData(filters) {
+    this.loadingMask = true;
     this.graphDataService.getGraphData(filters).subscribe(data => {
-
+      this.loadingMask = false;
       this.data = data;
       this.dataNest = d3.nest()
                       .key(function(d : any) {return d.MeterId;})
@@ -93,17 +94,46 @@ private margin = {top: 20, right: 20, bottom: 70, left: 50};
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
     this.x.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
     this.y.domain(d3Array.extent(this.data, (d) => d.Value ))
-    this.xAxis = d3Axis.axisBottom(this.x)
-                  .tickSizeInner(-this.height)
+    
+    this.xAxis = d3Axis.axisBottom(this.x);
+                  /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
-                  .tickPadding(10);
-    this.yAxis = d3Axis.axisLeft(this.y)
-                  .tickSizeInner(-this.width)
+                  .tickPadding(10);*/
+    this.yAxis = d3Axis.axisLeft(this.y);
+                  /*.tickSizeInner(-this.width)
                   .tickSizeOuter(0)
-                  .tickPadding(10);
+                  .tickPadding(10);*/
   }
 
+// gridlines in x axis function
+make_x_gridlines() {		
+    return d3.axisBottom(this.x)
+}
+
+// gridlines in y axis function
+make_y_gridlines() {		
+    return d3.axisLeft(this.y)
+}
   private drawAxis() {
+
+// add the X gridlines
+  this.svg.append("g")			
+      .attr("class", "grid")
+      .attr("transform", "translate(0," + this.height + ")")
+      .call(this.make_x_gridlines()
+            .tickSizeInner(-this.height)
+            .tickSizeOuter(0)
+            .tickPadding(10)
+      )
+
+    // add the Y gridlines
+  this.svg.append("g")			
+      .attr("class", "grid")
+      .call(this.make_y_gridlines()
+          .tickSizeInner(-this.width)
+          .tickSizeOuter(0)
+          .tickPadding(10)
+      )
 
     this.svg.append("g")
           .attr("class", "x axis") 

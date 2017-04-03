@@ -20,3 +20,13 @@
     font-weight: bold;
     text-anchor: middle;
 }
+
+.grid line {
+  stroke: gray;
+  /*stroke-opacity: 0.9;*/
+  /*shape-rendering: crispEdges;*/
+}
+
+.grid path {
+  stroke-width: 0;
+}
