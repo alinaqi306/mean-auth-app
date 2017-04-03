@@ -60,15 +60,14 @@ private margin = {top: 20, right: 20, bottom: 70, left: 50};
   }
 
   getData(filters) {
-    this.loadingMask = true;
+   // this.loadingMask = true;
     this.graphDataService.getGraphData(filters).subscribe(data => {
-      this.loadingMask = false;
+     // this.loadingMask = false;
       this.data = data;
       this.dataNest = d3.nest()
                       .key(function(d : any) {return d.MeterId;})
                       .entries(this.data);
 
-      //this.loadingMask = false;
       this.ngZone.run(() => {
         this.initSvg();
         this.initAxis();
