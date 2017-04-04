@@ -33,9 +33,9 @@
     font-size: 12px;
   }
 
-  .tick line{
+  /*.tick line{
     opacity: 0.2;
-  }
+  }*/
 
 /* loader*/
 
@@ -51,4 +51,14 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+.grid line {
+  stroke: gray;
+  stroke-opacity: 0.2;
+  /*shape-rendering: crispEdges;*/
+}
+
+.grid path {
+  stroke-width: 0;
 }
