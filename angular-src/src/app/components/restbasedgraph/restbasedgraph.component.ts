@@ -31,6 +31,13 @@ export class RestbasedgraphComponent implements OnInit {
   private line: d3Shape.Line<[number, number]>;
   private loadingMask: boolean;
 
+  // zoom veriables
+  private zoom : any;
+  private zoomViewPort: any;
+  private gX : any;
+  private gY : any;
+  private path : any;
+
   private numberOfMonths: number;
   private isDateRangeSelected: boolean;
   private fromDate: Date;
@@ -44,6 +51,20 @@ export class RestbasedgraphComponent implements OnInit {
     this.width = 900 - this.margin.left - this.margin.right ;
     this.height = 500 - this.margin.top - this.margin.bottom;
     this.filters.numberOfMonths = this.numberOfMonths;
+    
+    this.zoom = d3.zoom()
+    .scaleExtent([1, 10])
+    .translateExtent([[0, 0], [this.width, this.height]])
+    .extent([[0, 0], [this.width, this.height]])
+    .on("zoom", () =>{ 
+      //debugger;
+      var new_yScale = d3.event.transform.rescaleY(this.y);
+      var new_xScale = d3.event.transform.rescaleX(this.x);
+      this.gX.call(this.xAxis.scale(new_xScale));
+      this.gY.call(this.yAxis.scale(new_yScale));
+
+      this.path.attr("transform", d3.event.transform);
+    });
   }
   ngOnInit() {
     //this.loadingMask = true;
@@ -54,7 +75,8 @@ export class RestbasedgraphComponent implements OnInit {
   initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
-                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
+                 .call(this.zoom);
   }
 
   getData(filters) {
@@ -65,12 +87,14 @@ export class RestbasedgraphComponent implements OnInit {
       //this.loadingMask = false;
       this.ngZone.run(() => {
         this.initSvg();
+        this.addZoomViewPort();
         this.initAxis();
         //this.labelLine(); // add readings on the line graph
         this.drawAxis();
         this.xAxisLable();
         this.yAxisLable();
         this.drawLine();
+        
       })
     },
     err => {        //observable can return error
@@ -129,12 +153,12 @@ make_y_gridlines() {
           .tickPadding(10)
       )
 
-    this.svg.append("g")
+    this.gX = this.svg.append("g")
           .attr("class", "x axis") 
           .attr("transform", "translate(0," + this.height + ")")
           .call(this.xAxis);
 
-    this.svg.append("g")
+    this.gY = this.svg.append("g")
           .attr("class", "y axis")
           .call(this.yAxis)
           .append("text")
@@ -167,7 +191,7 @@ yAxisLable(){
                        .x( (d: any) => this.x(new Date(d.LogDate)) )
                        .y( (d: any) => this.y(d.Value) );
 
-    this.svg.append("path")
+    this.path = this.svg.append("path")
             .datum(this.data)
             .attr("fill", "none")
       .attr("stroke", "steelblue")
@@ -175,10 +199,19 @@ yAxisLable(){
       .attr("stroke-linecap", "round")
       .attr("stroke-width", 1.5)
       .attr("d", this.line)
-      .transition()
-      .ease(d3.easeLinear) // trying to add transition
-      .delay(function(d,i){ return i * 200;});
+      //.transition()
+      //.ease(d3.easeLinear) // trying to add transition
+      //.delay(function(d,i){ return i * 200;})
+      ;
 
+  }
+
+  addZoomViewPort(){
+    this.zoomViewPort = this.svg.append("rect")
+                                .attr("class", "zoom")
+                                .attr("width", this.width)
+                                .attr("height", this.height)
+                                .call(this.zoom)
   }
 
   labelLine(){
@@ -192,6 +225,19 @@ yAxisLable(){
             .attr("y", function(d) {return this.y(d.Value);})
             .style("fill", "black");
 
+  }
+
+  zoomFunction(){
+      // create new scale ojects based on event
+      debugger;
+    var new_yScale = d3.event.transform.rescaleY(this.y);
+    var new_xScale = d3.event.transform.rescaleX(this.x);
+
+    // update axes
+    this.gX.call(this.xAxis.scale(new_xScale));
+    this.gY.call(this.yAxis.scale(new_yScale));
+
+    this.path.attr("transform", d3.event.transform);
   }
 
   removeOldGraphElements(){

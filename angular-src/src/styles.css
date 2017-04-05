@@ -62,3 +62,9 @@
 .grid path {
   stroke-width: 0;
 }
+
+.zoom {
+  cursor: move;
+  fill: none;
+  pointer-events: all;
+}
