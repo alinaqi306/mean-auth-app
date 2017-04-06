@@ -15,7 +15,10 @@
     <label for="toDate"> to Date:</label>
     <input type="date" class="form-control" [(ngModel)]="toDate" name="toDate">
 </div>
-  <button type="submit" class="btn btn-default">Submit</button>
+<div class="row">
+  <div class="col-sm-4"> <button type="submit" class="btn btn-default">Submit</button></div>
+  <div class="col-sm-4"> <button type="button" (click) = "onToggleBtnClick()" class="btn btn-default">{{toggleBtnLabel}}</button></div>
+</div>
 </form>
 <div  class="svg-container">
     <svg width="100%" height="100%" viewBox="0 0 900 900" preserveAspectRatio="xMinYMin meet" class="svg-content"></svg>

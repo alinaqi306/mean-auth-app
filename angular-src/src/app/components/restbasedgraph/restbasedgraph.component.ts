@@ -23,6 +23,7 @@ export class RestbasedgraphComponent implements OnInit {
   private height: number;
   private x: any;
   private y: any;
+  private xScaleBar: any;
   private xAxis: any;
   private yAxis : any;
   private svg: any;
@@ -43,6 +44,8 @@ export class RestbasedgraphComponent implements OnInit {
   private fromDate: Date;
   private toDate: Date;
   private filters: Filter = new Filter();
+  private isLineGraph: boolean;
+  private toggleBtnLabel: string;
 
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
@@ -65,6 +68,8 @@ export class RestbasedgraphComponent implements OnInit {
 
       this.path.attr("transform", d3.event.transform);
     });
+    this.isLineGraph = true;
+    this.toggleBtnLabel = "Show Bar Graph";
   }
   ngOnInit() {
     //this.loadingMask = true;
@@ -75,8 +80,7 @@ export class RestbasedgraphComponent implements OnInit {
   initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
-                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
-                 .call(this.zoom);
+                 .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
   }
 
   getData(filters) {
@@ -87,13 +91,16 @@ export class RestbasedgraphComponent implements OnInit {
       //this.loadingMask = false;
       this.ngZone.run(() => {
         this.initSvg();
-        this.addZoomViewPort();
+        //this.addZoomViewPort();
         this.initAxis();
         //this.labelLine(); // add readings on the line graph
         this.drawAxis();
         this.xAxisLable();
         this.yAxisLable();
-        this.drawLine();
+        if(this.isLineGraph)
+          this.drawLine();
+        else
+          this.drawBars();
         
       })
     },
@@ -108,14 +115,27 @@ export class RestbasedgraphComponent implements OnInit {
 
 
   private initAxis() {
-    this.x = d3Scale.scaleTime().range([0, this.width]);
-    this.y = d3Scale.scaleLinear().range([this.height, 0]);
-    this.x.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-    this.y.domain(d3Array.extent(this.data, (d) => d.Value ))
-    this.xAxis = d3Axis.axisBottom(this.x);
+    if(this.isLineGraph){
+      this.x = d3Scale.scaleTime().range([0, this.width]);
+      this.x.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      this.xAxis = d3Axis.axisBottom(this.x);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
+    }
+    else{
+      this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width]);//.paddingInner(0.1);
+      this.xScaleBar.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      this.xAxis = d3Axis.axisBottom(this.xScaleBar);
+                  /*.tickSizeInner(-this.height)
+                  .tickSizeOuter(0)
+                  .tickPadding(10);*/
+    }
+
+    this.y = d3Scale.scaleLinear().range([this.height, 0]);
+    
+    this.y.domain(d3Array.extent(this.data, (d) => d.Value ))
+
     this.yAxis = d3Axis.axisLeft(this.y);
                   /*.tickSizeInner(-this.width)
                   .tickSizeOuter(0)
@@ -123,8 +143,11 @@ export class RestbasedgraphComponent implements OnInit {
   }
 
 // gridlines in x axis function
-make_x_gridlines() {		
+make_x_gridlines() {
+  if(this.isLineGraph)		
     return d3.axisBottom(this.x)
+  else
+    return d3.axisBottom(this.xScaleBar)
 }
 
 // gridlines in y axis function
@@ -206,6 +229,19 @@ yAxisLable(){
 
   }
 
+drawBars(){
+  this.svg.selectAll("rect")
+    .data(this.data)
+    .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)); })
+      .attr("y", (d:any) => { return this.y(d.Value); })
+      .attr("width", "7px")
+      .attr("height", (d:any) => { return this.height - this.y(d.Value); });
+
+}
+
   addZoomViewPort(){
     this.zoomViewPort = this.svg.append("rect")
                                 .attr("class", "zoom")
@@ -244,10 +280,12 @@ yAxisLable(){
     this.svg.selectAll("path").remove();
     this.svg.selectAll("g").remove();
     this.svg.selectAll("text").remove();
+    this.svg.selectAll("rect").remove();
     this.xAxis = null;
     this.yAxis = null;
     this.x = null;
     this.y = null;
+    this.xScaleBar = null;
     this.line = null;
     this.data = null;
     this.svg = null;
@@ -271,6 +309,21 @@ yAxisLable(){
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));
+    }
+  }
+
+  onToggleBtnClick(){
+    if(!this.isLineGraph){
+      this.isLineGraph = true;
+      this.toggleBtnLabel = "Show Bar Graph";
+      this.removeOldGraphElements(); 
+      this.getData(this.filters);
+    }
+    else{
+      this.isLineGraph = false;
+      this.toggleBtnLabel = "Show Line Graph";
+      this.removeOldGraphElements(); 
+      this.getData(this.filters);
     }
   }
 }

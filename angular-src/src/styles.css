@@ -68,3 +68,11 @@
   fill: none;
   pointer-events: all;
 }
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
