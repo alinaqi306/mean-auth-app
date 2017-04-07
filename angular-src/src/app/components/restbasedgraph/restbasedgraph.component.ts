@@ -124,7 +124,7 @@ export class RestbasedgraphComponent implements OnInit {
                   .tickPadding(10);*/
     }
     else{
-      this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width]);//.paddingInner(0.1);
+      this.xScaleBar = d3Scale.scaleTime().range([this.width/this.data.length/2, this.width-this.width/this.data.length/2]);//.paddingInner(0.1);
       this.xScaleBar.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
       this.xAxis = d3Axis.axisBottom(this.xScaleBar);
                   /*.tickSizeInner(-this.height)
@@ -235,10 +235,14 @@ drawBars(){
     .enter()
       .append("rect")
       .attr("class", "bar")
-      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)); })
+      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)) - (this.width/this.data.length)/2 ; })
       .attr("y", (d:any) => { return this.y(d.Value); })
-      .attr("width", "7px")
-      .attr("height", (d:any) => { return this.height - this.y(d.Value); });
+      .attr("width", this.width/this.data.length)
+      .attr("height", (d:any) => { return this.height - this.y(d.Value); })
+      .append("title")
+        .text((d:any) => {
+          return d.Value + " , " + d.LogDate;
+        });
 
 }
 
