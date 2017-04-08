@@ -2,22 +2,29 @@
 <!--<div *ngIf = "loadingMask == true" class="loader">
 </div> -->
 <form (submit) = "onFormSubmit()">
-  <div class="form-group" *ngIf = "isDateRangeSelected == false">
+  <div class="form-group" >
     <label for="Previous Months"> Data for {{numberOfMonths}} Month(s):</label>
     <input type="number" min="1" onkeypress="return event.charCode >= 49" class="form-control" [(ngModel)] = "numberOfMonths" name = "numberOfMonths" >
   </div>
-  <div class="checkbox">
+ <!-- <div class="checkbox">
     <label > <input type="checkbox"  [(ngModel)] = "isDateRangeSelected" name = "isDateRangeSelected"> Provide date Range  </label>   
+  </div> -->
+  <div class="ui-grid-col-10">
+    <button pButton label="Cutom Date" type="button" icon='fa-external-link' (click)="showDateDialog()"></button>
   </div>
-<div class="form-group" *ngIf = "isDateRangeSelected == true">
-    <label for="fromDate"> from Date:</label>
-    <input type="date" class="form-control" [(ngModel)]="fromDate" name="fromDate">
-    <label for="toDate"> to Date:</label>
-    <input type="date" class="form-control" [(ngModel)]="toDate" name="toDate">
-</div>
+<p-dialog header="Select Date" [(visible)]="isDateRangeSelected" [responsive]="true" [resizable]="false"
+  width = 350 >
+  
+    <label for="fromDate" style="display: block"> From Date:</label>
+    <p-calendar [(ngModel)]="fromDate" name="fromDate" showIcon = "true"></p-calendar>
+    <label for="toDate" style="display: block"> To Date:</label>
+    <p-calendar  [(ngModel)]="toDate" name="toDate" showIcon = "true"></p-calendar>
+    <div style="margin-top: 30px"> <button type="submit" class="btn btn-default">Submit</button></div>
+  
+</p-dialog >
 <div class="row">
-  <div class="col-sm-4"> <button type="submit" class="btn btn-default">Submit</button></div>
-  <div class="col-sm-4"> <button type="button" (click) = "onToggleBtnClick()" class="btn btn-default">{{toggleBtnLabel}}</button></div>
+  <div class="col-sm-4" style="margin-top: 30px"> <button type="submit" class="btn btn-default">Submit</button></div>
+  <div class="col-sm-4" style="margin-top: 30px"> <button type="button" (click) = "onToggleBtnClick()" class="btn btn-default">{{toggleBtnLabel}}</button></div>
 </div>
 </form>
 <div  class="svg-container">

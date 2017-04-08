@@ -313,16 +313,21 @@ drawBars(){
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));
+      this.isDateRangeSelected = false;
     }
   }
+  
+showDateDialog(){
+  this.isDateRangeSelected = true;
+}
 
-  onToggleBtnClick(){
-    if(!this.isLineGraph){
-      this.isLineGraph = true;
-      this.toggleBtnLabel = "Show Bar Graph";
-      this.removeOldGraphElements(); 
-      this.getData(this.filters);
-    }
+onToggleBtnClick(){
+  if (!this.isLineGraph) {
+    this.isLineGraph = true;
+    this.toggleBtnLabel = "Show Bar Graph";
+    this.removeOldGraphElements();
+    this.getData(this.filters);
+  }
     else{
       this.isLineGraph = false;
       this.toggleBtnLabel = "Show Line Graph";

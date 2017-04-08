@@ -13,6 +13,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { ProfileComponent } from './components/profile/profile.component';
 
 import { FlashMessagesModule} from 'angular2-flash-messages';
+import {CalendarModule, DialogModule} from 'primeng/primeng';
 
 import { ValidationService } from './services/validation.service';
 import { AuthService } from './services/auth.service';
@@ -54,7 +55,9 @@ const appRoutes : Routes = [
     FormsModule,
     HttpModule,
     RouterModule.forRoot(appRoutes),
-    FlashMessagesModule
+    FlashMessagesModule,
+    CalendarModule,
+    DialogModule
   ],
   providers: [ValidationService, AuthService,AuthGuard,GraphdataService],
   bootstrap: [AppComponent]
