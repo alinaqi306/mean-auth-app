@@ -46,6 +46,9 @@ export class RestbasedgraphComponent implements OnInit {
   private filters: Filter = new Filter();
   private isLineGraph: boolean;
   private toggleBtnLabel: string;
+  private weekScale = d3.timeWeek;
+  private monthScale = d3.timeMonth;
+  private activeScale : any;
 
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
@@ -73,6 +76,7 @@ export class RestbasedgraphComponent implements OnInit {
   }
   ngOnInit() {
     //this.loadingMask = true;
+    this.activeScale = this.monthScale;
     this.getData(this.filters);
     
   }
@@ -86,7 +90,7 @@ export class RestbasedgraphComponent implements OnInit {
   getData(filters) {
     //this.loadingMask = true;
     this.graphDataService.getGraphData(filters).subscribe(data => {
-
+      
       this.data = data;
       //this.loadingMask = false;
       this.ngZone.run(() => {
@@ -116,16 +120,18 @@ export class RestbasedgraphComponent implements OnInit {
 
   private initAxis() {
     if(this.isLineGraph){
-      this.x = d3Scale.scaleTime().range([0, this.width]);
-      this.x.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      this.x = d3Scale.scaleTime().range([0, this.width])
+      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
+      .nice(this.activeScale);
       this.xAxis = d3Axis.axisBottom(this.x);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
     }
     else{
-      this.xScaleBar = d3Scale.scaleTime().range([this.width/this.data.length/2, this.width-this.width/this.data.length/2]);//.paddingInner(0.1);
-      this.xScaleBar.domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
+      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
+      .nice(this.activeScale);
       this.xAxis = d3Axis.axisBottom(this.xScaleBar);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
@@ -235,13 +241,13 @@ drawBars(){
     .enter()
       .append("rect")
       .attr("class", "bar")
-      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)) - (this.width/this.data.length)/2 ; })
+      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)); })
       .attr("y", (d:any) => { return this.y(d.Value); })
-      .attr("width", this.width/this.data.length)
+      .attr("width", "7px")
       .attr("height", (d:any) => { return this.height - this.y(d.Value); })
       .append("title")
         .text((d:any) => {
-          return d.Value + " , " + d.LogDate;
+          return d.Value + " , " + new Date(d.LogDate);
         });
 
 }
@@ -293,6 +299,9 @@ drawBars(){
     this.line = null;
     this.data = null;
     this.svg = null;
+    this.gX = null;
+    this.gY = null;
+    this.path = null;
   }
 
   onFormSubmit(){
@@ -310,6 +319,12 @@ drawBars(){
 
         this.flashMessage.show('To date should be greater than from date', {cssClass : 'alert-danger', timeout: 4000});
         return false;
+      }
+      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) <= 7 ){
+        this.activeScale = this.weekScale;
+      }
+      else{
+        this.activeScale = this.monthScale;
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));

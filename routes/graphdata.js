@@ -14,11 +14,11 @@ router.post('/data', (req, res, next) => {
 
     if(fromDate == null && toDate == null){
        
-            query = 'select * from Readings where LogDate >= \''+ moment().subtract(numberOfMonths, "months").format("YYYY-MM-DD HH:mm:ss") + '\' order by LogDate';
+            query = 'select * from DummyReadings where LogDate >= \''+ moment().subtract(numberOfMonths, "months").format("YYYY-MM-DD HH:mm:ss") + '\' order by LogDate';
 
     }
     else{
-        query = 'select * from Readings where LogDate between \''+ moment(fromDate).format("YYYY-MM-DD HH:mm:ss") + '\' and \'' + moment(toDate).add({hours:23, minutes:30}).format("YYYY-MM-DD HH:mm:ss") +'\' order by LogDate';
+        query = 'select * from DummyReadings where LogDate between \''+ moment(fromDate).format("YYYY-MM-DD HH:mm:ss") + '\' and \'' + moment(toDate).add({hours:23, minutes:30}).format("YYYY-MM-DD HH:mm:ss") +'\' order by LogDate';
     }
     connection.connect(function (err) {
         if (err) {
