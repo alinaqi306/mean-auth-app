@@ -1,0 +1,27 @@
+
+.svg-container { 
+	display: inline-block;
+	position: relative;
+	width: 100%;
+	padding-bottom: 100%; 
+	vertical-align: middle; 
+	overflow: hidden; 
+}
+
+.svg-content { 
+	display: inline-block;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+
+/*.grid line {
+  stroke: red;
+  stroke-opacity: 0.9;
+  /*shape-rendering: crispEdges;*/
+/*}
+
+.grid path {
+  stroke-width: 0;
+}*/

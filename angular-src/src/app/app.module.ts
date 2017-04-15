@@ -23,6 +23,7 @@ import { CsvgraphComponent } from './components/csvgraph/csvgraph.component';
 import { RestbasedgraphComponent } from './components/restbasedgraph/restbasedgraph.component';
 import { GraphdataService } from './services/graphdata.service';
 import { MultilinegraphComponent } from './components/multilinegraph/multilinegraph.component';
+import { ZoomgraphComponent } from './components/zoomgraph/zoomgraph.component';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -33,7 +34,8 @@ const appRoutes : Routes = [
   {path : 'graph', component : GraphComponent},
   {path : 'csvgraph', component : CsvgraphComponent},
   {path : 'restbasedgraph', component : RestbasedgraphComponent},
-  {path : 'multilinegraph', component : MultilinegraphComponent}
+  {path : 'multilinegraph', component : MultilinegraphComponent},
+  {path : 'zoomgraph', component : ZoomgraphComponent}
 
 ];
 @NgModule({
@@ -48,7 +50,8 @@ const appRoutes : Routes = [
     GraphComponent,
     CsvgraphComponent,
     RestbasedgraphComponent,
-    MultilinegraphComponent
+    MultilinegraphComponent,
+    ZoomgraphComponent
   ],
   imports: [
     BrowserModule,
