@@ -21,7 +21,10 @@
 .line {
   fill: none;
   stroke: steelblue;
+  stroke-linejoin: round;
+  stroke-linecap: round;
   stroke-width: 1.5px;
+  clip-path: url(#clip);
 }
 
   .axis path,

@@ -73,20 +73,6 @@ export class ZoomgraphComponent implements OnInit {
     this.height = 500 - this.margin.top - this.margin.bottom;
     this.height2 = 600 - this.margin2.top - this.margin2.bottom;
     this.filters.numberOfMonths = this.numberOfMonths;
-    
-    this.zoom = d3.zoom()
-    .scaleExtent([1, 10])
-    .translateExtent([[0, 0], [this.width, this.height]])
-    .extent([[0, 0], [this.width, this.height]])
-    .on("zoom", () =>{ 
-      //debugger;
-      var new_yScale = d3.event.transform.rescaleY(this.y);
-      var new_xScale = d3.event.transform.rescaleX(this.x);
-      this.gX.call(this.xAxis.scale(new_xScale));
-      this.gY.call(this.yAxis.scale(new_yScale));
-
-      this.path.attr("transform", d3.event.transform);
-    });
     this.isLineGraph = true;
     this.toggleBtnLabel = "Show Bar Graph";
   }
@@ -182,33 +168,20 @@ export class ZoomgraphComponent implements OnInit {
 
     this.brush = d3.brushX()
     .extent([[this.leftHandle, 0], [this.rightHandle, this.height2]])
-	.on("brush start", this.updateCurrentExtent)
-    .on("brush end", (d:any) => this.brushed);
+	  .on("brush start", () => {
+      let e = <d3Brush.D3BrushEvent<any>>d3.event;
+      let s: d3Brush.BrushSelection = e.selection;
 
-    this.zoom = d3.zoom()
-    .scaleExtent([1, Infinity])
-    .translateExtent([[0, 0], [this.width, this.height]])
-    .extent([[0, 0], [this.width, this.height]])
-    .on("zoom", this.zoomed);
-  }
-
-updateCurrentExtent(element: SVGGElement){
-  debugger;
-  let e = <d3Brush.D3BrushEvent<any>>d3.event;
-  let s: d3Brush.BrushSelection = e.selection;
-
-  this.currentExtent = s;//d3.brushSelection(element);
-  //console.log(this.currentExtent);
-}
-
-brushed(){
-  debugger;
-  if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
+      this.currentExtent = s;
+    })
+    .on("brush", () => {
+      
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
 
   var s = d3.event.selection;
 //d3.event.transform.sc
   let p = this.currentExtent,
-		  xYear = this.x2(new Date(2016,0,1)),
+		  xYear = this.x2(new Date(2017,0,1)),
 		  left,
 		  right;
 
@@ -252,20 +225,28 @@ brushed(){
   this.x.domain(s.map(this.x2.invert, this.x2));
 	  this.focus.select(".line").attr("d", this.line);
 	  this.focus.select(".axis--x").call(this.xAxis);
+    this.focus.select(".grid--x").call(this.xAxis);
+    //this.focus.select(".grid--y").call(this.xAxis);
 	  this.svg.select(".zoom").call(this.zoom.transform, d3.zoomIdentity
 												 .scale(this.width / (s[1] - s[0]))
 												 .translate(-s[0], 0));
-}
+    });
 
-zoomed(){
+    this.zoom = d3.zoom()
+    .scaleExtent([1, Infinity])
+    .translateExtent([[0, 0], [this.width, this.height]])
+    .extent([[0, 0], [this.width, this.height]])
+    .on("zoom", () => {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
+      var t = d3.event.transform;
+      this.x.domain(t.rescaleX(this.x2).domain());
+      this.focus.select(".line").attr("d", this.line);
+      this.focus.select(".axis--x").call(this.xAxis);
+      this.focus.select(".grid--x").call(this.xAxis);
+      this.context.select(".brush").call(this.brush.move, this.x.range().map(t.invertX, t));
+    });
+  }
 
-  if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return; // ignore zoom-by-brush
-	  var t = d3.event.transform;
-	  this.x.domain(t.rescaleX(this.x2).domain());
-	  this.focus.select(".line").attr("d", this.line);
-	  this.focus.select(".axis--x").call(this.xAxis);
-	  this.context.select(".brush").call(this.brush.move, this.x.range().map(t.invertX, t));
-}
 
 // gridlines in x axis function
 make_x_gridlines() {
@@ -284,7 +265,7 @@ make_y_gridlines() {
 
     // add the X gridlines
   this.focus.append("g")			
-      .attr("class", "grid")
+      .attr("class", "grid grid--x")
       .attr("transform", "translate(0," + this.height + ")")
       .call(this.make_x_gridlines()
             .tickSizeInner(-this.height)
@@ -294,7 +275,7 @@ make_y_gridlines() {
 
     // add the Y gridlines
   this.focus.append("g")			
-      .attr("class", "grid")
+      .attr("class", "grid grid--y")
       .call(this.make_y_gridlines()
           .tickSizeInner(-this.width)
           .tickSizeOuter(0)
@@ -302,12 +283,12 @@ make_y_gridlines() {
       )
 
     this.gX = this.focus.append("g")
-          .attr("class", "x axis") 
+          .attr("class", "axis axis--x") 
           .attr("transform", "translate(0," + this.height + ")")
           .call(this.xAxis);
 
     this.gY = this.focus.append("g")
-          .attr("class", "y axis")
+          .attr("class", "axis axis--y")
           .call(this.yAxis)
           .append("text")
           .attr("class", "axis-title")
@@ -316,20 +297,75 @@ make_y_gridlines() {
           .attr("dy", ".71em");
 
   this.context.append("g")
-          .attr("class", "x axis") 
+          .attr("class", "axis axis--x") 
           .attr("transform", "translate(0," + this.height2 + ")")
           .call(this.xAxis2);
 
   this.context.append("g")
       .attr("class", "brush")
-	  .on("click", this.brushed)
+	  .on("click", () => {
+      if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
+
+  var s = d3.event.selection;
+//d3.event.transform.sc
+  let p = this.currentExtent,
+		  xYear = this.x2(new Date(2017,0,1)),
+		  left,
+		  right;
+
+  if (d3.event.selection && s[1] - s[0] >= xYear) {
+		if (p[0] == s[0] && p[1] < s[1]) { // case where right handle is extended
+		  if (s[1] >= this.width) {
+		    left = this.width - xYear
+			right = this.width
+			s = [left, right];
+		  }
+		  else {
+		    left = s[1] - xYear/2
+			right = s[1] + xYear/2
+			s = [left, right];
+		  }
+		}
+		else if (p[1] == s[1] && p[0] > s[0]) { // case where left handle is extended
+		  if (s[0] <= 0) {
+		    s = [0, xYear];
+		  }
+		  else {
+		    s = [s[0] - xYear/2, s[0] + xYear/2]
+		  }
+		}
+	}
+
+
+  if (!d3.event.selection) { // if no selection took place and the brush was just clicked
+    var mouse = d3.mouse(s)[0]; // changed from this to s
+    if (mouse < xYear / 2) {
+      s = [0, xYear];
+    } else if (mouse + xYear / 2 > this.width) {
+      s = [this.width - xYear, this.width];
+    }
+    else {
+      s = [d3.mouse(s)[0] - xYear / 2, d3.mouse(s)[0] + xYear / 2]; // changed from this to s
+    }
+  }
+
+
+  this.x.domain(s.map(this.x2.invert, this.x2));
+	  this.focus.select(".line").attr("d", this.line);
+	  this.focus.select(".axis--x").call(this.xAxis);
+    this.focus.select(".grid--x").call(this.xAxis);
+	  this.svg.select(".zoom").call(this.zoom.transform, d3.zoomIdentity
+												 .scale(this.width / (s[1] - s[0]))
+												 .translate(-s[0], 0));
+    
+    })
 	  .call(this.brush)
   }
 xAxisLable(){
     this.svg.append("text")             
       .attr("transform",
             "translate(" + (this.width/2) + " ," + 
-                           (this.height + this.margin.top + 20) + ")")
+                           (this.height + this.margin.top + 40) + ")")
       .style("text-anchor", "middle")
       .text("Time");
 }
@@ -355,21 +391,13 @@ yAxisLable(){
 
     this.path = this.focus.append("path")
       .datum(this.data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
+      .attr("class", "line")
       .attr("d", this.line)
       ;
 
     this.path2 = this.context.append("path")
       .datum(this.data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
+      .attr("class", "line")
       .attr("d", this.line2)
       ;
 
@@ -397,13 +425,6 @@ drawBars(){
 
 }
 
-  addZoomViewPort(){
-    this.zoomViewPort = this.svg.append("rect")
-                                .attr("class", "zoom")
-                                .attr("width", this.width)
-                                .attr("height", this.height)
-                                .call(this.zoom)
-  }
 
   labelLine(){
     // values to appear on line graph also
@@ -418,35 +439,29 @@ drawBars(){
 
   }
 
-  zoomFunction(){
-      // create new scale ojects based on event
-      debugger;
-    var new_yScale = d3.event.transform.rescaleY(this.y);
-    var new_xScale = d3.event.transform.rescaleX(this.x);
-
-    // update axes
-    this.gX.call(this.xAxis.scale(new_xScale));
-    this.gY.call(this.yAxis.scale(new_yScale));
-
-    this.path.attr("transform", d3.event.transform);
-  }
-
   removeOldGraphElements(){
     this.svg.selectAll("path").remove();
     this.svg.selectAll("g").remove();
     this.svg.selectAll("text").remove();
     this.svg.selectAll("rect").remove();
+    this.svg.selectAll("defs").remove();
     this.xAxis = null;
+    this.xAxis2 = null;
     this.yAxis = null;
     this.x = null;
     this.y = null;
+    this.x2 = null;
     this.xScaleBar = null;
     this.line = null;
+    this.line2 = null;
+    this.path2 = null;
     this.data = null;
     this.svg = null;
     this.gX = null;
     this.gY = null;
     this.path = null;
+    this.focus = null;
+    this.context = null;
   }
 
   onFormSubmit(){
