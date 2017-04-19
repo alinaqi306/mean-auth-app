@@ -178,9 +178,9 @@ export class ZoomgraphComponent implements OnInit {
       
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
 
-  var s = d3.event.selection;
+  var s = d3.event.selection || this.x2.range();
 //d3.event.transform.sc
-  let p = this.currentExtent,
+ /* let p = this.currentExtent,
 		  xYear = this.x2(new Date(2017,0,1)),
 		  left,
 		  right;
@@ -220,7 +220,7 @@ export class ZoomgraphComponent implements OnInit {
       s = [d3.mouse(s)[0] - xYear / 2, d3.mouse(s)[0] + xYear / 2]; // changed from this to s
     }
   }
-
+*/
 
   this.x.domain(s.map(this.x2.invert, this.x2));
 	  this.focus.select(".line").attr("d", this.line);
@@ -306,9 +306,9 @@ make_y_gridlines() {
 	  .on("click", () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
 
-  var s = d3.event.selection;
+  var s = d3.event.selection || this.x2.range();
 //d3.event.transform.sc
-  let p = this.currentExtent,
+ /* let p = this.currentExtent,
 		  xYear = this.x2(new Date(2017,0,1)),
 		  left,
 		  right;
@@ -348,7 +348,7 @@ make_y_gridlines() {
       s = [d3.mouse(s)[0] - xYear / 2, d3.mouse(s)[0] + xYear / 2]; // changed from this to s
     }
   }
-
+*/
 
   this.x.domain(s.map(this.x2.invert, this.x2));
 	  this.focus.select(".line").attr("d", this.line);
