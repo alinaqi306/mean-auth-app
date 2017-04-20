@@ -49,6 +49,10 @@ export class RestbasedgraphComponent implements OnInit {
   private weekScale = d3.timeWeek;
   private monthScale = d3.timeMonth;
   private activeScale : any;
+  private monthTimeFormat = d3.timeFormat("%b %d");
+  private weekTimeFormat = d3.timeFormat("%a %d");
+  private yearTimeFormat = d3.timeFormat("%b %Y");
+  private selectedTimeFormat: any;
 
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
@@ -58,25 +62,13 @@ export class RestbasedgraphComponent implements OnInit {
     this.height = 500 - this.margin.top - this.margin.bottom;
     this.filters.numberOfMonths = this.numberOfMonths;
     
-    this.zoom = d3.zoom()
-    .scaleExtent([1, 10])
-    .translateExtent([[0, 0], [this.width, this.height]])
-    .extent([[0, 0], [this.width, this.height]])
-    .on("zoom", () =>{ 
-      //debugger;
-      var new_yScale = d3.event.transform.rescaleY(this.y);
-      var new_xScale = d3.event.transform.rescaleX(this.x);
-      this.gX.call(this.xAxis.scale(new_xScale));
-      this.gY.call(this.yAxis.scale(new_yScale));
-
-      this.path.attr("transform", d3.event.transform);
-    });
     this.isLineGraph = true;
     this.toggleBtnLabel = "Show Bar Graph";
   }
   ngOnInit() {
     //this.loadingMask = true;
     this.activeScale = this.monthScale;
+    this.selectedTimeFormat = this.monthTimeFormat;
     this.getData(this.filters);
     
   }
@@ -123,7 +115,7 @@ export class RestbasedgraphComponent implements OnInit {
       this.x = d3Scale.scaleTime().range([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
       .nice(this.activeScale);
-      this.xAxis = d3Axis.axisBottom(this.x);
+      this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
@@ -131,8 +123,8 @@ export class RestbasedgraphComponent implements OnInit {
     else{
       this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-      .nice(this.activeScale);
-      this.xAxis = d3Axis.axisBottom(this.xScaleBar);
+      .nice(this.activeScale)
+      this.xAxis = d3Axis.axisBottom(this.xScaleBar).tickFormat(this.selectedTimeFormat);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
@@ -171,6 +163,8 @@ make_y_gridlines() {
             .tickSizeInner(-this.height)
             .tickSizeOuter(0)
             .tickPadding(10)
+            .tickFormat(this.selectedTimeFormat)
+            
       )
 
     // add the Y gridlines
@@ -305,26 +299,38 @@ drawBars(){
   }
 
   onFormSubmit(){
+    var dateDiff = this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate))
     if(!this.isDateRangeSelected){
       this.filters.numberOfMonths = Math.abs(this.numberOfMonths);
       this.filters.fromDate = null;
       this.filters.toDate = null;
+      if(this.filters.numberOfMonths <= 12){
+        this.selectedTimeFormat = this.monthTimeFormat;
+      }
+      else{
+        this.selectedTimeFormat = this.yearTimeFormat;
+      }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request  
       this.getData(this.filters);
     }
     else{
       this.filters.fromDate = this.fromDate;
       this.filters.toDate = this.toDate;
-      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) < 0 ){
+      if(dateDiff < 0 ){
 
         this.flashMessage.show('To date should be greater than from date', {cssClass : 'alert-danger', timeout: 4000});
         return false;
       }
-      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) <= 7 ){
+      if(dateDiff <= 7 ){
         this.activeScale = this.weekScale;
+        this.selectedTimeFormat = this.weekTimeFormat;
+      }
+      else if(dateDiff > 7 && dateDiff <= 30){
+        this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.monthTimeFormat 
       }
       else{
-        this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.yearTimeFormat;
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));
