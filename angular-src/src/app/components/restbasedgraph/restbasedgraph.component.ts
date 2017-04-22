@@ -132,7 +132,7 @@ export class RestbasedgraphComponent implements OnInit {
     else{
       this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-      .nice(this.activeScale)
+      //.nice(this.activeScale)
       this.xAxis = d3Axis.axisBottom(this.xScaleBar).tickFormat(this.selectedTimeFormat)
                           .ticks(this.tickInterval, this.tickSlab);
                   /*.tickSizeInner(-this.height)
