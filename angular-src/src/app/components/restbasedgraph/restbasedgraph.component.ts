@@ -52,7 +52,10 @@ export class RestbasedgraphComponent implements OnInit {
   private monthTimeFormat = d3.timeFormat("%b %d");
   private weekTimeFormat = d3.timeFormat("%a %d");
   private yearTimeFormat = d3.timeFormat("%b %Y");
+  private dayTimeFormat = d3.timeFormat("%a %I %p");
   private selectedTimeFormat: any;
+  private tickSlab: any;
+  private tickInterval: any;
 
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
@@ -69,6 +72,10 @@ export class RestbasedgraphComponent implements OnInit {
     //this.loadingMask = true;
     this.activeScale = this.monthScale;
     this.selectedTimeFormat = this.monthTimeFormat;
+    // this is set taking in view that initailly e will be showing 30 days data by default
+    this.tickInterval = d3.timeDay;
+    this.tickSlab = 5;
+
     this.getData(this.filters);
     
   }
@@ -113,18 +120,21 @@ export class RestbasedgraphComponent implements OnInit {
   private initAxis() {
     if(this.isLineGraph){
       this.x = d3Scale.scaleTime().range([0, this.width])
-      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-      .nice(this.activeScale);
-      this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat);
+      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      //.nice(this.activeScale);
+      this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat)
+                        .ticks(this.tickInterval, this.tickSlab);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
+      
     }
     else{
       this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
       .nice(this.activeScale)
-      this.xAxis = d3Axis.axisBottom(this.xScaleBar).tickFormat(this.selectedTimeFormat);
+      this.xAxis = d3Axis.axisBottom(this.xScaleBar).tickFormat(this.selectedTimeFormat)
+                          .ticks(this.tickInterval, this.tickSlab);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
@@ -163,7 +173,9 @@ make_y_gridlines() {
             .tickSizeInner(-this.height)
             .tickSizeOuter(0)
             .tickPadding(10)
+            .ticks(this.tickInterval, this.tickSlab)
             .tickFormat(this.selectedTimeFormat)
+            //.ticks(10)
             
       )
 
@@ -321,16 +333,51 @@ drawBars(){
         this.flashMessage.show('To date should be greater than from date', {cssClass : 'alert-danger', timeout: 4000});
         return false;
       }
-      if(dateDiff <= 7 ){
-        this.activeScale = this.weekScale;
-        this.selectedTimeFormat = this.weekTimeFormat;
+      if(dateDiff >0 && dateDiff < 1){
+        this.selectedTimeFormat = this.dayTimeFormat;
+        this.tickInterval = d3.timeHour;
+        this.tickSlab = 3;
       }
-      else if(dateDiff > 7 && dateDiff <= 30){
-        this.activeScale = this.monthScale;
-        this.selectedTimeFormat = this.monthTimeFormat 
+      else if(dateDiff <= 2 ){
+        //this.activeScale = this.weekScale;
+        this.selectedTimeFormat = this.dayTimeFormat;
+        this.tickInterval = d3.timeHour;
+        this.tickSlab = 6;
+      }
+      else if(dateDiff <= 7 ){
+        //this.activeScale = this.weekScale;
+        this.selectedTimeFormat = this.weekTimeFormat;
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 1;
+      }
+      else if(dateDiff > 7 && dateDiff <= 15){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.dayTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 3; 
+      }
+      else if(dateDiff > 15 && dateDiff <= 30){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.dayTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 5; 
+      }
+      else if(dateDiff > 30 && dateDiff <= 182){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.monthTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 16; 
+      }
+      else if(dateDiff > 182 && dateDiff <= 365){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.monthTimeFormat
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2; 
       }
       else{
         this.selectedTimeFormat = this.yearTimeFormat;
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2;
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));
