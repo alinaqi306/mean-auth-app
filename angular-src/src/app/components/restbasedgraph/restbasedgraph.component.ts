@@ -318,6 +318,8 @@ drawBars(){
       this.filters.toDate = null;
       if(this.filters.numberOfMonths <= 12){
         this.selectedTimeFormat = this.monthTimeFormat;
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2; 
       }
       else{
         this.selectedTimeFormat = this.yearTimeFormat;
