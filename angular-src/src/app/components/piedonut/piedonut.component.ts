@@ -63,7 +63,6 @@ export class PiedonutComponent implements OnInit {
   }
 
   drawPie(svgId, index){
-    console.log(index);
     var svg = d3.select("#"+svgId)
                 .append("g")
                  .attr("transform", "translate(" + this.width / 2 + "," + this.height / 2 + ")");
