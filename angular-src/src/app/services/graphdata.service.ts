@@ -17,4 +17,8 @@ export class GraphdataService {
     .map(res => res.json());
   }
 
+  getGasConsumption(){
+    let value = Math.ceil(Math.random()*100);
+    return value;
+  }
 }
