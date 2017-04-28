@@ -142,7 +142,7 @@ export class RestbasedgraphComponent implements OnInit {
 
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
     
-    this.y.domain(d3Array.extent(this.data, (d) => d.Value ))
+    this.y.domain([0, d3Array.max(this.data, (d) => new Date(d.Value))])
 
     this.yAxis = d3Axis.axisLeft(this.y);
                   /*.tickSizeInner(-this.width)
@@ -186,6 +186,7 @@ make_y_gridlines() {
           .tickSizeInner(-this.width)
           .tickSizeOuter(0)
           .tickPadding(10)
+          
       )
 
     this.gX = this.svg.append("g")
