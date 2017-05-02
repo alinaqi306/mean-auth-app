@@ -30,8 +30,8 @@ rect.selection {
   stroke: steelblue;
   stroke-linejoin: round;
   stroke-linecap: round;
-  stroke-width: 1.5px;
-  clip-path: url(#clip);
+  stroke-width: 1.5;
+ clip-path: url(#clip);
 }
 
   .axis path,
@@ -66,13 +66,23 @@ rect.selection {
     100% { transform: rotate(360deg); }
 }
 
-.grid line {
+.gridx line {
   stroke: gray;
   stroke-opacity: 0.2;
   /*shape-rendering: crispEdges;*/
 }
 
-.grid path {
+.gridx path {
+  stroke-width: 0;
+}
+
+.gridy line {
+  stroke: gray;
+  stroke-opacity: 0.2;
+  /*shape-rendering: crispEdges;*/
+}
+
+.gridy path {
   stroke-width: 0;
 }
 
@@ -88,4 +98,9 @@ rect.selection {
 
 .bar:hover {
   fill: brown;
+}
+
+.liquidFillGaugeText { 
+  font-family: Helvetica; 
+  font-weight: bold; 
 }

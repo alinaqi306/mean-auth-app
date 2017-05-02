@@ -10,6 +10,7 @@ import * as d3Axis from "d3-axis";
 //import * as d3Transition from "d3-transition";
 import * as type from '../../data/Readings';
 import { Filter } from '../../dto/Filter';
+import {Observable} from 'rxjs/Rx';
 
 @Component({
   selector: 'app-restbasedgraph',
@@ -75,11 +76,48 @@ export class RestbasedgraphComponent implements OnInit {
     // this is set taking in view that initailly e will be showing 30 days data by default
     this.tickInterval = d3.timeDay;
     this.tickSlab = 5;
-
     this.getData(this.filters);
+    Observable.interval(15000).subscribe(x => {
+      console.log('API Call');
+      //this.removeOldGraphElements();
+      this.update();
+      //this.getData(this.filters);
+   });
+    
     
   }
 
+update(){
+  this.filters.fromDate = new Date('2017-03-03 00:00:00');
+  this.filters.toDate = new Date('2017-03-15 23:30:00');
+  this.graphDataService.getGraphData(JSON.stringify(this.filters)).subscribe(data => {
+    this.data = data;
+    this.x = d3Scale.scaleTime().range([0, this.width])
+              .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+    this.y = d3Scale.scaleLinear().range([this.height, 0]);
+    
+    this.y.domain([0, d3Array.max(this.data, (d) => new Date(d.Value))]);
+
+    this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat)
+                        .ticks(this.tickInterval, this.tickSlab);
+    this.yAxis = d3Axis.axisLeft(this.y);
+
+   
+    
+    this.svg.select(".line")
+            .datum(this.data)
+            .attr("d", this.line);
+    this.svg.select(".gridx")
+            .call(this.xAxis);
+    this.svg.select(".gridy")
+            .call(this.yAxis);
+    this.svg.select(".x.axis") // change the x axis
+            .call(this.xAxis);
+    this.svg.select(".y.axis") // change the y axis
+            .call(this.yAxis);
+  });
+  
+}
   initSvg() {
     this.svg = d3.select("svg")
                  .append("g")
@@ -166,8 +204,8 @@ make_y_gridlines() {
   private drawAxis() {
 
     // add the X gridlines
-  this.svg.append("g")			
-      .attr("class", "grid")
+ this.svg.append("g")			
+      .attr("class", "gridx")
       .attr("transform", "translate(0," + this.height + ")")
       .call(this.make_x_gridlines()
             .tickSizeInner(-this.height)
@@ -181,7 +219,7 @@ make_y_gridlines() {
 
     // add the Y gridlines
   this.svg.append("g")			
-      .attr("class", "grid")
+      .attr("class", "gridy")
       .call(this.make_y_gridlines()
           .tickSizeInner(-this.width)
           .tickSizeOuter(0)
@@ -229,11 +267,7 @@ yAxisLable(){
 
     this.path = this.svg.append("path")
             .datum(this.data)
-            .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
+            .attr("class","line")
       .attr("d", this.line)
       //.transition()
       //.ease(d3.easeLinear) // trying to add transition
