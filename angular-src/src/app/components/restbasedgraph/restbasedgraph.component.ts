@@ -58,6 +58,8 @@ export class RestbasedgraphComponent implements OnInit {
   private tickSlab: any;
   private tickInterval: any;
 
+  private scheduledUpdateInterval = 1830000; // milisecond equivalent of 30 mins 30 seconds 
+
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
     this.numberOfMonths = 1;
@@ -77,20 +79,19 @@ export class RestbasedgraphComponent implements OnInit {
     this.tickInterval = d3.timeDay;
     this.tickSlab = 5;
     this.getData(this.filters);
-    Observable.interval(15000).subscribe(x => {
+    Observable.interval(this.scheduledUpdateInterval).subscribe(x => {
       console.log('API Call');
-      //this.removeOldGraphElements();
+     
       this.update();
-      //this.getData(this.filters);
+      
    });
     
     
   }
 
 update(){
-  this.filters.fromDate = new Date('2017-03-03 00:00:00');
-  this.filters.toDate = new Date('2017-03-15 23:30:00');
-  this.graphDataService.getGraphData(JSON.stringify(this.filters)).subscribe(data => {
+
+  this.graphDataService.getScheduledUpdate().subscribe(data => {
     this.data = data;
     this.x = d3Scale.scaleTime().range([0, this.width])
               .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
@@ -108,9 +109,19 @@ update(){
             .datum(this.data)
             .attr("d", this.line);
     this.svg.select(".gridx")
-            .call(this.xAxis);
+            .call(this.make_x_gridlines()
+            .tickSizeInner(-this.height)
+            .tickSizeOuter(0)
+            .tickPadding(10)
+            .ticks(this.tickInterval, this.tickSlab)
+            .tickFormat(this.selectedTimeFormat)
+            );
     this.svg.select(".gridy")
-            .call(this.yAxis);
+            .call(this.make_y_gridlines()
+          .tickSizeInner(-this.width)
+          .tickSizeOuter(0)
+          .tickPadding(10)
+          );
     this.svg.select(".x.axis") // change the x axis
             .call(this.xAxis);
     this.svg.select(".y.axis") // change the y axis

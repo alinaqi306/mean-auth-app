@@ -14,7 +14,7 @@ router.post('/data', (req, res, next) => {
 
     if(fromDate == null && toDate == null){
        
-            query = 'select * from DummyReadings where LogDate >= \''+ moment().subtract(numberOfMonths, "months").format("YYYY-MM-DD HH:mm:ss") + '\' order by LogDate';
+        query = 'select * from DummyReadings where LogDate >= \''+ moment().subtract(numberOfMonths, "months").format("YYYY-MM-DD HH:mm:ss") + '\' and LogDate <= \''+ moment().format("YYYY-MM-DD HH:mm:ss") + '\'order by LogDate';
 
     }
     else{
@@ -40,6 +40,37 @@ router.post('/data', (req, res, next) => {
                     /*for (var i in recordSet) {
                         console.log(recordSet[i].LogDate);
                     }*/
+                }
+            });
+        }
+    });
+   
+});
+
+router.get('/scheduledUpdate', (req, res, next) => {
+    var connection = new sql.Connection(config.databaseConfig);
+    var sqlReq = new sql.Request(connection);
+  
+    var query = 'select * from DummyReadings where LogDate >= \''+ moment().subtract(15, "days").format("YYYY-MM-DD HH:mm:ss") + '\' and LogDate <= \''+ moment().format("YYYY-MM-DD HH:mm:ss") + '\' order by LogDate';
+            
+
+    
+    connection.connect(function (err) {
+        if (err) {
+            console.log(err);
+            throw err;
+        }
+        else {
+            console.log('Connection Success.......');
+            console.log(query);
+            sqlReq.query(query, (err, recordSet) => {
+                if (err) {
+                    console.log(err);
+                    throw err;
+
+                } else {
+                    console.log('Query Success.......');
+                     res.send( recordSet );
                 }
             });
         }

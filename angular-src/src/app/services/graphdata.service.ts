@@ -9,14 +9,19 @@ export class GraphdataService {
   getGraphData(filters){
     let headers = new Headers();
     headers.append('Content-Type','application/json');
-   /* let params = '?numberOfMonths=' + filters.numberOfMonths + '&fromDate=' + filters.fromDate 
-                  + '&toDate=' + filters.toDate ;*/
-    /*return this.http.get('http://localhost:3000/graphdata/data'+ params , {headers:headers})
-    .map(res => res.json());*/
+
     return this.http.post('http://localhost:3000/graphdata/data' , filters, {headers:headers})
     .map(res => res.json());
   }
 
+  getScheduledUpdate(){
+    let headers = new Headers();
+    headers.append('Content-Type','application/json');
+
+    return this.http.get('http://localhost:3000/graphdata/scheduledUpdate' , {headers:headers})
+    .map(res => res.json());
+
+  }
   getGasConsumption(){
     let value = Math.ceil(Math.random()*100);
     return value;
