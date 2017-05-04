@@ -79,7 +79,7 @@ export class RestbasedgraphComponent implements OnInit {
     this.tickInterval = d3.timeDay;
     this.tickSlab = 5;
     this.getData(this.filters);
-    Observable.interval(this.scheduledUpdateInterval).subscribe(x => {
+    Observable.interval(10000).subscribe(x => {
       console.log('API Call');
      
       this.update();
@@ -93,21 +93,48 @@ update(){
 
   this.graphDataService.getScheduledUpdate().subscribe(data => {
     this.data = data;
-    this.x = d3Scale.scaleTime().range([0, this.width])
-              .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+
+    if(this.isLineGraph) {
+      this.x = d3Scale.scaleTime().range([0, this.width])
+                      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      
+      this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat)
+                        .ticks(this.tickInterval, this.tickSlab);
+
+       this.svg.select(".line")
+            .datum(this.data)
+            .attr("d", this.line);
+    }
+    else{
+        this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
+      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ));
+      this.xAxis = d3Axis.axisBottom(this.xScaleBar).tickFormat(this.selectedTimeFormat)
+                          .ticks(this.tickInterval, this.tickSlab);
+
+      this.svg.selectAll(".bar")
+              .remove()
+              .exit()
+              .data(this.data)
+              .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)); })
+                .attr("y", (d:any) => { return this.y(d.Value); })
+                .attr("width", "7px")
+                .attr("height", (d:any) => { return this.height - this.y(d.Value); })
+                .append("title")
+                .text((d:any) => {
+                  return d.Value + " , " + new Date(d.LogDate);
+        });
+    }
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
     
     this.y.domain([0, d3Array.max(this.data, (d) => new Date(d.Value))]);
 
-    this.xAxis = d3Axis.axisBottom(this.x).tickFormat(this.selectedTimeFormat)
-                        .ticks(this.tickInterval, this.tickSlab);
+    
     this.yAxis = d3Axis.axisLeft(this.y);
 
    
-    
-    this.svg.select(".line")
-            .datum(this.data)
-            .attr("d", this.line);
     this.svg.select(".gridx")
             .call(this.make_x_gridlines()
             .tickSizeInner(-this.height)
