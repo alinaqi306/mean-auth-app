@@ -29,8 +29,10 @@ export class ZoomgraphComponent implements OnInit {
   private x2: any;
   private y2:any;
   private xScaleBar: any;
+  private xScaleBar2: any;
   private xAxis: any;
   private xAxis2:any;
+  private zoomAxis: any;
   private yAxis : any;
   private svg: any;
   private leftHandle = 0;
@@ -64,6 +66,13 @@ export class ZoomgraphComponent implements OnInit {
   private weekScale = d3.timeWeek;
   private monthScale = d3.timeMonth;
   private activeScale : any;
+  private monthTimeFormat = d3.timeFormat("%b %d");
+  private weekTimeFormat = d3.timeFormat("%a %d");
+  private yearTimeFormat = d3.timeFormat("%b %Y");
+  private dayTimeFormat = d3.timeFormat("%a %I %p");
+  private selectedTimeFormat: any;
+  private tickSlab: any;
+  private tickInterval: any;
 
   constructor(private graphDataService: GraphdataService, private ngZone : NgZone,
               private validationService: ValidationService, private flashMessage: FlashMessagesService ) {
@@ -79,6 +88,10 @@ export class ZoomgraphComponent implements OnInit {
   ngOnInit() {
     //this.loadingMask = true;
     this.activeScale = this.monthScale;
+    this.selectedTimeFormat = this.monthTimeFormat;
+    // this is set taking in view that initailly we will be showing 30 days data by default
+    this.tickInterval = d3.timeDay;
+    this.tickSlab = 5;
     this.getData(this.filters);
     
   }
@@ -134,16 +147,20 @@ export class ZoomgraphComponent implements OnInit {
     if(this.isLineGraph){
       this.x = d3Scale.scaleTime().range([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-      .nice(this.activeScale);
-      this.xAxis = d3Axis.axisBottom(this.x);
+      this.xAxis = d3Axis.axisBottom(this.x)
+                          .tickFormat(this.selectedTimeFormat)
+                          .ticks(this.tickInterval, this.tickSlab);
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
       
       this.x2 = d3Scale.scaleTime().range([0, this.width])
       .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
-      .nice(this.activeScale);
-      this.xAxis2 = d3Axis.axisBottom(this.x2);
+      this.xAxis2 = d3Axis.axisBottom(this.x2)
+                          .tickFormat(this.selectedTimeFormat)
+                          .ticks(this.tickInterval, this.tickSlab);
+
+      this.zoomAxis = d3Axis.axisBottom(this.x);
     }
     else{
       this.xScaleBar = d3Scale.scaleTime().rangeRound([0, this.width])
@@ -153,11 +170,16 @@ export class ZoomgraphComponent implements OnInit {
                   /*.tickSizeInner(-this.height)
                   .tickSizeOuter(0)
                   .tickPadding(10);*/
+
+      this.xScaleBar2 = d3Scale.scaleTime().rangeRound([0, this.width])
+      .domain(d3Array.extent(this.data, (d) => new Date(d.LogDate) ))
+      .nice(this.activeScale);
+      this.xAxis2 = d3Axis.axisBottom(this.xScaleBar2);
     }
 
     this.y = d3Scale.scaleLinear().range([this.height, 0]);
     
-    this.y.domain(d3Array.extent(this.data, (d) => d.Value ));
+    this.y.domain([0, d3Array.max(this.data, (d) => new Date(d.Value))]);
 
     this.y2 = d3.scaleLinear().range([this.height2, 0]);
     this.y2.domain(this.y.domain());
@@ -168,65 +190,25 @@ export class ZoomgraphComponent implements OnInit {
 
     this.brush = d3.brushX()
     .extent([[this.leftHandle, 0], [this.rightHandle, this.height2]])
-	  .on("brush start", () => {
-      let e = <d3Brush.D3BrushEvent<any>>d3.event;
-      let s: d3Brush.BrushSelection = e.selection;
-
-      this.currentExtent = s;
-    })
     .on("brush", () => {
       
+      var s;
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
 
-  var s = d3.event.selection || this.x2.range();
-//d3.event.transform.sc
- /* let p = this.currentExtent,
-		  xYear = this.x2(new Date(2017,0,1)),
-		  left,
-		  right;
+      if(this.isLineGraph) {
+        s = d3.event.selection || this.x2.range();
+        this.x.domain(s.map(this.x2.invert, this.x2));
+	      this.focus.select(".line").attr("d", this.line);
+      }
+      else {
+        s = d3.event.selection || this.xScaleBar2.range();
+        this.xScaleBar.domain(s.map(this.xScaleBar2.invert, this.xScaleBar2));
+	      this.focus.select(".bars").data("d", this.data);
+      }
 
-  if (d3.event.selection && s[1] - s[0] >= xYear) {
-		if (p[0] == s[0] && p[1] < s[1]) { // case where right handle is extended
-		  if (s[1] >= this.width) {
-		    left = this.width - xYear
-			right = this.width
-			s = [left, right];
-		  }
-		  else {
-		    left = s[1] - xYear/2
-			right = s[1] + xYear/2
-			s = [left, right];
-		  }
-		}
-		else if (p[1] == s[1] && p[0] > s[0]) { // case where left handle is extended
-		  if (s[0] <= 0) {
-		    s = [0, xYear];
-		  }
-		  else {
-		    s = [s[0] - xYear/2, s[0] + xYear/2]
-		  }
-		}
-	}
-
-
-  if (!d3.event.selection) { // if no selection took place and the brush was just clicked
-    var mouse = d3.mouse(s)[0]; // changed from this to s
-    if (mouse < xYear / 2) {
-      s = [0, xYear];
-    } else if (mouse + xYear / 2 > this.width) {
-      s = [this.width - xYear, this.width];
-    }
-    else {
-      s = [d3.mouse(s)[0] - xYear / 2, d3.mouse(s)[0] + xYear / 2]; // changed from this to s
-    }
-  }
-*/
-
-  this.x.domain(s.map(this.x2.invert, this.x2));
-	  this.focus.select(".line").attr("d", this.line);
-	  this.focus.select(".axis--x").call(this.xAxis);
-    this.focus.select(".grid--x").call(this.xAxis);
-    //this.focus.select(".grid--y").call(this.xAxis);
+	  this.focus.select(".axis--x").call(this.zoomAxis);
+    this.focus.select(".grid--x").call(this.zoomAxis);
+    //this.focus.select(".grid--y").call(this.yAxis);
 	  this.svg.select(".zoom").call(this.zoom.transform, d3.zoomIdentity
 												 .scale(this.width / (s[1] - s[0]))
 												 .translate(-s[0], 0));
@@ -241,8 +223,9 @@ export class ZoomgraphComponent implements OnInit {
       var t = d3.event.transform;
       this.x.domain(t.rescaleX(this.x2).domain());
       this.focus.select(".line").attr("d", this.line);
-      this.focus.select(".axis--x").call(this.xAxis);
-      this.focus.select(".grid--x").call(this.xAxis);
+      this.focus.select(".axis--x").call(this.zoomAxis);
+      this.focus.select(".grid--x").call(this.zoomAxis);
+      //this.focus.select(".grid--y").call(this.yAxis);
       this.context.select(".brush").call(this.brush.move, this.x.range().map(t.invertX, t));
     });
   }
@@ -265,17 +248,19 @@ make_y_gridlines() {
 
     // add the X gridlines
   this.focus.append("g")			
-      .attr("class", "grid grid--x")
+      .attr("class", "gridx grid--x")
       .attr("transform", "translate(0," + this.height + ")")
       .call(this.make_x_gridlines()
             .tickSizeInner(-this.height)
             .tickSizeOuter(0)
             .tickPadding(10)
+            .ticks(this.tickInterval, this.tickSlab)
+            .tickFormat(this.selectedTimeFormat)
       )
 
     // add the Y gridlines
   this.focus.append("g")			
-      .attr("class", "grid grid--y")
+      .attr("class", "gridy grid--y")
       .call(this.make_y_gridlines()
           .tickSizeInner(-this.width)
           .tickSizeOuter(0)
@@ -306,54 +291,22 @@ make_y_gridlines() {
 	  .on("click", () => {
       if (d3.event.sourceEvent && d3.event.sourceEvent.type === "zoom") return;
 
-  var s = d3.event.selection || this.x2.range();
-//d3.event.transform.sc
- /* let p = this.currentExtent,
-		  xYear = this.x2(new Date(2017,0,1)),
-		  left,
-		  right;
-
-  if (d3.event.selection && s[1] - s[0] >= xYear) {
-		if (p[0] == s[0] && p[1] < s[1]) { // case where right handle is extended
-		  if (s[1] >= this.width) {
-		    left = this.width - xYear
-			right = this.width
-			s = [left, right];
-		  }
-		  else {
-		    left = s[1] - xYear/2
-			right = s[1] + xYear/2
-			s = [left, right];
-		  }
-		}
-		else if (p[1] == s[1] && p[0] > s[0]) { // case where left handle is extended
-		  if (s[0] <= 0) {
-		    s = [0, xYear];
-		  }
-		  else {
-		    s = [s[0] - xYear/2, s[0] + xYear/2]
-		  }
-		}
-	}
+      var s;
+      if(this.isLineGraph) {
+        s = d3.event.selection || this.x2.range();
+        this.x.domain(s.map(this.x2.invert, this.x2));
+	      this.focus.select(".line").attr("d", this.line);
+      }
+      else {
+        s = d3.event.selection || this.xScaleBar2.range();
+        this.xScaleBar.domain(s.map(this.xScaleBar2.invert, this.xScaleBar2));
+	      this.focus.select(".bars").data("d", this.data);
+      }
 
 
-  if (!d3.event.selection) { // if no selection took place and the brush was just clicked
-    var mouse = d3.mouse(s)[0]; // changed from this to s
-    if (mouse < xYear / 2) {
-      s = [0, xYear];
-    } else if (mouse + xYear / 2 > this.width) {
-      s = [this.width - xYear, this.width];
-    }
-    else {
-      s = [d3.mouse(s)[0] - xYear / 2, d3.mouse(s)[0] + xYear / 2]; // changed from this to s
-    }
-  }
-*/
-
-  this.x.domain(s.map(this.x2.invert, this.x2));
-	  this.focus.select(".line").attr("d", this.line);
 	  this.focus.select(".axis--x").call(this.xAxis);
     this.focus.select(".grid--x").call(this.xAxis);
+    //this.focus.select(".grid--y").call(this.yAxis);
 	  this.svg.select(".zoom").call(this.zoom.transform, d3.zoomIdentity
 												 .scale(this.width / (s[1] - s[0]))
 												 .translate(-s[0], 0));
@@ -409,7 +362,8 @@ yAxisLable(){
   }
 
 drawBars(){
-  this.svg.selectAll("rect")
+  this.focus.selectAll("rect")
+    .attr("class", "bars")
     .data(this.data)
     .enter()
       .append("rect")
@@ -422,6 +376,27 @@ drawBars(){
         .text((d:any) => {
           return d.Value + " , " + new Date(d.LogDate);
         });
+  
+  this.context.selectAll("rect")
+    .attr("class", "bars")
+    .data(this.data)
+    .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", (d:any) => { return this.xScaleBar(new Date(d.LogDate)); })
+      .attr("y", (d:any) => { return this.y2(d.Value); })
+      .attr("width", "7px")
+      .attr("height", (d:any) => { return this.height2 - this.y2(d.Value); })
+      .append("title")
+        .text((d:any) => {
+          return d.Value + " , " + new Date(d.LogDate);
+        });
+
+  this.svg.append("rect")
+      .attr("class", "zoom")
+      .attr("width", this.width)
+      .attr("height", this.height)
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
 }
 
@@ -465,26 +440,75 @@ drawBars(){
   }
 
   onFormSubmit(){
+    var dateDiff = this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate));
     if(!this.isDateRangeSelected){
       this.filters.numberOfMonths = Math.abs(this.numberOfMonths);
       this.filters.fromDate = null;
       this.filters.toDate = null;
+      if(this.filters.numberOfMonths <= 12){
+        this.selectedTimeFormat = this.monthTimeFormat;
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2; 
+      }
+      else{
+        this.selectedTimeFormat = this.yearTimeFormat;
+      }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request  
       this.getData(this.filters);
     }
     else{
       this.filters.fromDate = this.fromDate;
       this.filters.toDate = this.toDate;
-      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) < 0 ){
+      if(dateDiff < 0 ){
 
         this.flashMessage.show('To date should be greater than from date', {cssClass : 'alert-danger', timeout: 4000});
         return false;
       }
-      if(this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate)) <= 7 ){
-        this.activeScale = this.weekScale;
+      if(dateDiff >0 && dateDiff < 1){
+        this.selectedTimeFormat = this.dayTimeFormat;
+        this.tickInterval = d3.timeHour;
+        this.tickSlab = 3;
+      }
+      else if(dateDiff <= 2 ){
+        //this.activeScale = this.weekScale;
+        this.selectedTimeFormat = this.dayTimeFormat;
+        this.tickInterval = d3.timeHour;
+        this.tickSlab = 6;
+      }
+      else if(dateDiff <= 7 ){
+        //this.activeScale = this.weekScale;
+        this.selectedTimeFormat = this.weekTimeFormat;
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 1;
+      }
+      else if(dateDiff > 7 && dateDiff <= 15){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.dayTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 3; 
+      }
+      else if(dateDiff > 15 && dateDiff <= 30){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.dayTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 5; 
+      }
+      else if(dateDiff > 30 && dateDiff <= 182){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.monthTimeFormat
+        this.tickInterval = d3.timeDay;
+        this.tickSlab = 16; 
+      }
+      else if(dateDiff > 182 && dateDiff <= 365){
+        //this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.monthTimeFormat
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2; 
       }
       else{
-        this.activeScale = this.monthScale;
+        this.selectedTimeFormat = this.yearTimeFormat;
+        this.tickInterval = d3.timeMonth;
+        this.tickSlab = 2;
       }
       this.removeOldGraphElements(); // this is required otherwise graphs are overlayed for each request 
       this.getData(JSON.stringify(this.filters));

@@ -75,7 +75,7 @@ export class RestbasedgraphComponent implements OnInit {
     //this.loadingMask = true;
     this.activeScale = this.monthScale;
     this.selectedTimeFormat = this.monthTimeFormat;
-    // this is set taking in view that initailly e will be showing 30 days data by default
+    // this is set taking in view that initailly we will be showing 30 days data by default
     this.tickInterval = d3.timeDay;
     this.tickSlab = 5;
     this.getData(this.filters);
@@ -384,7 +384,7 @@ drawBars(){
   }
 
   onFormSubmit(){
-    var dateDiff = this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate))
+    var dateDiff = this.validationService.dateDiffInDays(new Date(this.fromDate),new Date(this.toDate));
     if(!this.isDateRangeSelected){
       this.filters.numberOfMonths = Math.abs(this.numberOfMonths);
       this.filters.fromDate = null;
