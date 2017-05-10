@@ -26,6 +26,7 @@ import { MultilinegraphComponent } from './components/multilinegraph/multilinegr
 import { ZoomgraphComponent } from './components/zoomgraph/zoomgraph.component';
 //import { DonutComponent } from './components/donut/donut.component';
 import { PiedonutComponent } from './components/piedonut/piedonut.component';
+import { NewdialdisplayComponent } from './components/newdialdisplay/newdialdisplay.component';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -38,7 +39,8 @@ const appRoutes : Routes = [
   {path : 'restbasedgraph', component : RestbasedgraphComponent},
   {path : 'multilinegraph', component : MultilinegraphComponent},
   {path : 'zoomgraph', component : ZoomgraphComponent},
-  {path : 'piedonut', component : PiedonutComponent}
+  {path : 'piedonut', component : PiedonutComponent},
+  {path : 'newdialdisplay', component : NewdialdisplayComponent}
 
 ];
 @NgModule({
@@ -56,7 +58,8 @@ const appRoutes : Routes = [
     MultilinegraphComponent,
     ZoomgraphComponent,
     //DonutComponent,
-    PiedonutComponent
+    PiedonutComponent,
+    NewdialdisplayComponent
   ],
   imports: [
     BrowserModule,

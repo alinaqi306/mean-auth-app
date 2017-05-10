@@ -5,6 +5,7 @@
 @import url('../node_modules/font-awesome/css/font-awesome.min.css');
 @import url('/app/components/restbasedgraph/restbasedgraph.component.css');
 @import url('/app/components/multilinegraph/multilinegraph.component.css');
+@import url('/app/components/newdialdisplay/newdialdisplay.component.css');
 
 .axis {
   font: 10px sans-serif;
