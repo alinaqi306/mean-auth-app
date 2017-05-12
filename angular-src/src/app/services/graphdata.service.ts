@@ -23,7 +23,7 @@ export class GraphdataService {
 
   }
   getGasConsumption(){
-    let value = Math.ceil(Math.random()*100);
+    let value = Math.ceil(Math.random()*99);
     return value;
   }
 }

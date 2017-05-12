@@ -26,6 +26,7 @@ export class NewdialdisplayComponent implements OnInit {
   private svg: any;
   private arc_group: any;
   private line_group: any;
+  private svg_gas : any;
 
   constructor(private dataService : GraphdataService) { 
 
@@ -38,6 +39,59 @@ export class NewdialdisplayComponent implements OnInit {
     this.initSvg();
     this.drawArcs();
     this.drawLines();
+
+    Observable.interval(10000).subscribe(x => {
+      console.log("API call");
+      var gas_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
+      var water_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
+      var power_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
+
+
+     /* d3.select("#arc_gas").transition()
+                  .duration(750)
+                  .attrTween("d", () => {
+                      var interpolateStart = d3.interpolate(0, 0);
+                      var interpolateEnd = d3.interpolate(0, value);
+                      return  (t) => {
+                          //console.log(this.arc_gas.startAngle);
+                          var d = this.arc_gas ;
+                          d.startAngle = interpolateStart(t);
+                          d.endAngle = interpolateEnd(t);
+                          return this.arc_gas(d);
+                      };
+                  });*/
+
+    var gas_arc = d3Shape.arc()
+             .innerRadius(60)
+                          .outerRadius(70)
+                          .startAngle(2 * Math.PI)
+                          .endAngle( (2 * Math.PI) - (gas_value / 50) * Math.PI)
+                          .cornerRadius(20);
+
+    var water_arc = d3Shape.arc()
+                            .innerRadius(45)
+                            .outerRadius(55)
+                            .startAngle(2 * Math.PI)
+                            .endAngle( (2 * Math.PI) - (water_value / 50) * Math.PI)
+                            .cornerRadius(20);
+
+   var power_arc = d3Shape.arc()
+                            .innerRadius(30)
+                            .outerRadius(40)
+                            .startAngle(2 * Math.PI)
+                            .endAngle( (2 * Math.PI) - (power_value / 50) * Math.PI)
+                            .cornerRadius(20);
+
+    d3.select("#arc_gas")
+    .attr("d", gas_arc);
+    d3.select("#arc_water")
+    .attr("d", water_arc);
+    d3.select("#arc_power")
+    .attr("d", power_arc);
+      
+      
+     
+   });
   }
 
   initSvg(){
@@ -61,6 +115,7 @@ export class NewdialdisplayComponent implements OnInit {
     var waterValue = this.dataService.getGasConsumption();
     var powerValue = this.dataService.getGasConsumption();
 
+
     this.arc_gas = d3Shape.arc()
                           .innerRadius(60)
                           .outerRadius(70)
@@ -68,36 +123,32 @@ export class NewdialdisplayComponent implements OnInit {
                           .endAngle( (2 * Math.PI) - (gasValue / 50) * Math.PI)
                           .cornerRadius(20);
 
-    this.arc_gas = d3Shape.arc()
-                          .innerRadius(60)
-                          .outerRadius(70)
-                          .startAngle(2 * Math.PI)
-                          .endAngle( (2 * Math.PI) - (waterValue / 50) * Math.PI)
-                          .cornerRadius(20);
-
     this.arc_water = d3Shape.arc()
                             .innerRadius(45)
                             .outerRadius(55)
                             .startAngle(2 * Math.PI)
-                            .endAngle( (2 * Math.PI) - (powerValue / 50) * Math.PI)
+                            .endAngle( (2 * Math.PI) - (waterValue / 50) * Math.PI)
                             .cornerRadius(20);
 
     this.arc_power = d3Shape.arc()
                             .innerRadius(30)
                             .outerRadius(40)
                             .startAngle(2 * Math.PI)
-                            .endAngle( (2 * Math.PI) - (35 / 50) * Math.PI)
+                            .endAngle( (2 * Math.PI) - (powerValue / 50) * Math.PI)
                             .cornerRadius(20);
 
     this.arc_group.append("path")
     .attr("class", "arc_gas")
+    .attr("id", "arc_gas")
     .attr("d", this.arc_gas);
 
     this.arc_group.append("path")
     .attr("class", "arc_water")
+    .attr("id", "arc_water")
     .attr("d", this.arc_water);
     
     this.arc_group.append("path")
+    .attr("id", "arc_power")
     .attr("class", "arc_power")
     .attr("d", this.arc_power);
   }
