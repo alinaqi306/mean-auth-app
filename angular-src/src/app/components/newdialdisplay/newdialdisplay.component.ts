@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 
 import * as d3 from 'd3';
 import * as d3Scale from "d3-scale";
@@ -27,8 +27,13 @@ export class NewdialdisplayComponent implements OnInit {
   private arc_group: any;
   private line_group: any;
   private svg_gas : any;
+  private svg_water : any;
+  private svg_power : any;
+  private update_gas_arc : any;
+  private update_water_arc : any;
+  private update_power_arc : any;
 
-  constructor(private dataService : GraphdataService) { 
+  constructor(private dataService : GraphdataService, private ngZone: NgZone) { 
 
     this.width = 300;
     this.height = 500;
@@ -44,53 +49,51 @@ export class NewdialdisplayComponent implements OnInit {
       console.log("API call");
       var gas_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
       var water_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
-      var power_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
+     var power_value = this.dataService.getGasConsumption(); // service method returning random values between 0-99
 
 
-     /* d3.select("#arc_gas").transition()
-                  .duration(750)
-                  .attrTween("d", () => {
-                      var interpolateStart = d3.interpolate(0, 0);
-                      var interpolateEnd = d3.interpolate(0, value);
-                      return  (t) => {
-                          //console.log(this.arc_gas.startAngle);
-                          var d = this.arc_gas ;
-                          d.startAngle = interpolateStart(t);
-                          d.endAngle = interpolateEnd(t);
-                          return this.arc_gas(d);
-                      };
-                  });*/
+    this.svg_gas
+        .transition()
+        .duration(750)
+        .attrTween("d", (d: any) => {
+            var interpolateStart = d3.interpolate(d.startAngle, (2 * Math.PI) );
+            var interpolateEnd = d3.interpolate(d.endAngle, ((2 * Math.PI) - (gas_value / 50) * Math.PI));
+            return  (t) => {
+                
+                d.startAngle = interpolateStart(t);
+                d.endAngle = interpolateEnd(t);
+                return this.update_gas_arc(d);
+            };
+        });
 
-    var gas_arc = d3Shape.arc()
-             .innerRadius(60)
-                          .outerRadius(70)
-                          .startAngle(2 * Math.PI)
-                          .endAngle( (2 * Math.PI) - (gas_value / 50) * Math.PI)
-                          .cornerRadius(20);
+    this.svg_water
+        .transition()
+        .duration(750)
+        .attrTween("d", (d: any) => {
+            var interpolateStart = d3.interpolate(d.startAngle, (2 * Math.PI) );
+            var interpolateEnd = d3.interpolate(d.endAngle, ((2 * Math.PI) - (water_value / 50) * Math.PI));
+            return  (t) => {
+                
+                d.startAngle = interpolateStart(t);
+                d.endAngle = interpolateEnd(t);
+                return this.update_water_arc(d);
+            };
+        });
 
-    var water_arc = d3Shape.arc()
-                            .innerRadius(45)
-                            .outerRadius(55)
-                            .startAngle(2 * Math.PI)
-                            .endAngle( (2 * Math.PI) - (water_value / 50) * Math.PI)
-                            .cornerRadius(20);
-
-   var power_arc = d3Shape.arc()
-                            .innerRadius(30)
-                            .outerRadius(40)
-                            .startAngle(2 * Math.PI)
-                            .endAngle( (2 * Math.PI) - (power_value / 50) * Math.PI)
-                            .cornerRadius(20);
-
-    d3.select("#arc_gas")
-    .attr("d", gas_arc);
-    d3.select("#arc_water")
-    .attr("d", water_arc);
-    d3.select("#arc_power")
-    .attr("d", power_arc);
-      
-      
-     
+    this.svg_power
+        .transition()
+        .duration(750)
+        .attrTween("d", (d: any) => {
+            var interpolateStart = d3.interpolate(d.startAngle, (2 * Math.PI) );
+            var interpolateEnd = d3.interpolate(d.endAngle, ((2 * Math.PI) - (power_value / 50) * Math.PI));
+            return  (t) => {
+                
+                d.startAngle = interpolateStart(t);
+                d.endAngle = interpolateEnd(t);
+                return this.update_power_arc(d);
+            };
+        });
+  
    });
   }
 
@@ -116,6 +119,24 @@ export class NewdialdisplayComponent implements OnInit {
     var powerValue = this.dataService.getGasConsumption();
 
 
+    // these update_*_arc are needed to redraw the arcs with new start and end angles after schedule update(s)
+
+      this.update_gas_arc = this.arc_gas = d3Shape.arc()
+                          .innerRadius(60)
+                          .outerRadius(70)
+                          .cornerRadius(20);
+
+      this.update_water_arc = d3Shape.arc()
+                            .innerRadius(45)
+                            .outerRadius(55)
+                            .cornerRadius(20);
+
+      this.update_power_arc = d3Shape.arc()
+                            .innerRadius(30)
+                            .outerRadius(40)
+                            .cornerRadius(20);
+
+    // these arc_* are used to draw the arcs on fir
     this.arc_gas = d3Shape.arc()
                           .innerRadius(60)
                           .outerRadius(70)
@@ -137,20 +158,36 @@ export class NewdialdisplayComponent implements OnInit {
                             .endAngle( (2 * Math.PI) - (powerValue / 50) * Math.PI)
                             .cornerRadius(20);
 
-    this.arc_group.append("path")
-    .attr("class", "arc_gas")
-    .attr("id", "arc_gas")
-    .attr("d", this.arc_gas);
+    this.svg_gas = this.arc_group
+                          .append("path")
+                          .attr("class", "arc_gas")
+                          .attr("id", "arc_gas")
+                          .datum({
+                            endAngle : (2 * Math.PI) - (gasValue / 50) * Math.PI,
+                            startAngle: 2 * Math.PI
+                          })
+                          .attr("d", this.arc_gas);
 
-    this.arc_group.append("path")
-    .attr("class", "arc_water")
-    .attr("id", "arc_water")
-    .attr("d", this.arc_water);
+    this.svg_water = this.arc_group
+                              .append("path")
+                              .attr("class", "arc_water")
+                              .attr("id", "arc_water")
+                              .datum({
+                                endAngle : (2 * Math.PI) - (waterValue / 50) * Math.PI,
+                                startAngle: 2 * Math.PI
+                              })
+                              .attr("d", this.arc_water);
     
-    this.arc_group.append("path")
-    .attr("id", "arc_power")
-    .attr("class", "arc_power")
-    .attr("d", this.arc_power);
+
+    this.svg_power = this.arc_group
+                              .append("path")
+                              .attr("id", "arc_power")
+                              .attr("class", "arc_power")
+                              .datum({
+                                endAngle : (2 * Math.PI) - (powerValue / 50) * Math.PI,
+                                startAngle: 2 * Math.PI
+                              })
+                              .attr("d", this.arc_power);
   }
 
   drawLines(){
