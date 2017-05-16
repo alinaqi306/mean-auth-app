@@ -1,0 +1,21 @@
+
+<div>
+  <button type="button" class="btn btn-default" (click) = "showPrimeNgError()">PrimeNg</button>
+  <button style="margin-left: 20px" type="button" class="btn btn-default" (click) = "showNgPopup()">NgPopup</button>
+</div>
+<p-dialog header="Error" [(visible)]="isPrimeNgError" [responsive]="true" [resizable]="false"
+  width = 350 >
+    <div>
+      {{message}}
+    </div>
+    <div style="margin-top: 30px"> <button type="button" class="btn btn-default" (click) = "closeDialog()">Ok</button></div>
+</p-dialog >
+
+<popup  #ngpopup>
+  <div>
+    {{message}}
+  </div>
+  <div style="margin-top: 30px">
+    <button type="button" class="btn btn-default" (click) = "closeDialog()">Ok</button>
+  </div>
+</popup>

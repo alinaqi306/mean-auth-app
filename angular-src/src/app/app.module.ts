@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpModule } from '@angular/http';
 import { RouterModule, Routes } from '@angular/router';
+import {PopupModule} from 'ng2-opd-popup';
 
 import { AppComponent } from './app.component';
 import { NavbarComponent } from './navbar/navbar.component';
@@ -27,6 +28,7 @@ import { ZoomgraphComponent } from './components/zoomgraph/zoomgraph.component';
 //import { DonutComponent } from './components/donut/donut.component';
 import { PiedonutComponent } from './components/piedonut/piedonut.component';
 import { NewdialdisplayComponent } from './components/newdialdisplay/newdialdisplay.component';
+import { ErrordialogsComponent } from './components/errordialogs/errordialogs.component';
 
 const appRoutes : Routes = [
   {path : '', component : HomeComponent},
@@ -40,7 +42,8 @@ const appRoutes : Routes = [
   {path : 'multilinegraph', component : MultilinegraphComponent},
   {path : 'zoomgraph', component : ZoomgraphComponent},
   {path : 'piedonut', component : PiedonutComponent},
-  {path : 'newdialdisplay', component : NewdialdisplayComponent}
+  {path : 'newdialdisplay', component : NewdialdisplayComponent},
+  {path : 'errordialogs', component : ErrordialogsComponent}
 
 ];
 @NgModule({
@@ -59,7 +62,8 @@ const appRoutes : Routes = [
     ZoomgraphComponent,
     //DonutComponent,
     PiedonutComponent,
-    NewdialdisplayComponent
+    NewdialdisplayComponent,
+    ErrordialogsComponent
   ],
   imports: [
     BrowserModule,
@@ -68,7 +72,8 @@ const appRoutes : Routes = [
     RouterModule.forRoot(appRoutes),
     FlashMessagesModule,
     CalendarModule,
-    DialogModule
+    DialogModule,
+    PopupModule.forRoot()
   ],
   providers: [ValidationService, AuthService,AuthGuard,GraphdataService],
   bootstrap: [AppComponent]
